@@ -10,20 +10,19 @@ import org.springframework.stereotype.Repository;
 import org.springframework.util.ResourceUtils;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
 @Repository
-public class PersonsRepository {
+public class PersonRepository {
     private static final Logger logger = LogManager.getLogger("Persons Repository");
 
     private List<Person> personsRepository;
 
-    private CustomProperties properties;
+    private final CustomProperties properties;
 
-    public PersonsRepository(CustomProperties properties) {
+    public PersonRepository(CustomProperties properties) {
         this.properties = properties;
         try {
             File dataSource = ResourceUtils.getFile("classpath:" + this.properties.getDataSource());
@@ -64,6 +63,7 @@ public class PersonsRepository {
     }
 
     public Person update(String lastName, String firstName, Person person) {
+        logger.debug("call: update()");
         // TODO - Use streams
         Person personToUpdate = findByName(lastName, firstName).orElse(null);
 
@@ -73,6 +73,8 @@ public class PersonsRepository {
             personToUpdate.setZip(person.getZip());
             personToUpdate.setPhone(person.getPhone());
             personToUpdate.setEmail(person.getEmail());
+
+            logger.info("Person updated in repository : " + personToUpdate);
         }
         return personToUpdate;
     }

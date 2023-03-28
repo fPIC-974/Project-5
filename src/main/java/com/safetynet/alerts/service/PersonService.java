@@ -1,7 +1,7 @@
 package com.safetynet.alerts.service;
 
 import com.safetynet.alerts.model.Person;
-import com.safetynet.alerts.repository.PersonsRepository;
+import com.safetynet.alerts.repository.PersonRepository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,31 +10,31 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class PersonsService {
+public class PersonService {
     private static final Logger logger = LogManager.getLogger("Persons Service");
 
-    private PersonsRepository personsRepository;
+    private PersonRepository personRepository;
 
     @Autowired
-    public PersonsService(PersonsRepository personsRepository) {
-        this.personsRepository = personsRepository;
+    public PersonService(PersonRepository personRepository) {
+        this.personRepository = personRepository;
     }
 
     public List<Person> getPersons() {
-        return (List<Person>) personsRepository.findAll();
+        return (List<Person>) personRepository.findAll();
     }
 
     public Person getPersonByName(String lastName, String firstName) {
-        return personsRepository.findByName(lastName, firstName).orElse(null);
+        return personRepository.findByName(lastName, firstName).orElse(null);
     }
 
     public boolean existsPersonByName(String lastName, String firstName) {
-        return personsRepository.existsByName(lastName, firstName);
+        return personRepository.existsByName(lastName, firstName);
     }
 
     public void deletePersonByName(String lastName, String firstName) {
         if (existsPersonByName(lastName, firstName)) {
-            personsRepository.deleteByName(lastName, firstName);
+            personRepository.deleteByName(lastName, firstName);
         } else {
             logger.error("Person not found");
             throw new IllegalStateException("Person not found");
@@ -43,7 +43,7 @@ public class PersonsService {
 
     public Person savePerson(Person person) {
         if (!existsPersonByName(person.getLastName(), person.getFirstName())) {
-            return personsRepository.save(person);
+            return personRepository.save(person);
         } else {
             logger.error("Person already exists");
             throw new IllegalStateException("Person already exists");
@@ -52,7 +52,7 @@ public class PersonsService {
 
     public Person updatePerson(String lastName, String firstName, Person person) {
         if (existsPersonByName(lastName, firstName)) {
-            return personsRepository.update(lastName, firstName, person);
+            return personRepository.update(lastName, firstName, person);
         } else {
             logger.error("Person not found");
             throw new IllegalStateException("Person not found");
