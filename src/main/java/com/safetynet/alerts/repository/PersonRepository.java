@@ -18,7 +18,7 @@ import java.util.Optional;
 public class PersonRepository {
     private static final Logger logger = LogManager.getLogger("Persons Repository");
 
-    private List<Person> personsRepository;
+    private List<Person> personRepository;
 
     private final CustomProperties properties;
 
@@ -33,7 +33,7 @@ public class PersonRepository {
 
             JavaType type = objectMapper.getTypeFactory().constructCollectionType(List.class, Person
                     .class);
-            this.personsRepository = objectMapper.readValue(String.valueOf(personNode), type);
+            this.personRepository = objectMapper.readValue(String.valueOf(personNode), type);
 
         } catch (IOException ioException) {
             logger.error(ioException.getMessage(), ioException);
@@ -41,11 +41,11 @@ public class PersonRepository {
     }
 
     public Iterable<Person> findAll() {
-        return personsRepository;
+        return personRepository;
     }
 
     public Optional<Person> findByName(String lastName, String firstName) {
-        return this.personsRepository.stream()
+        return this.personRepository.stream()
                 .filter(person -> person.getLastName().equals(lastName) && person.getFirstName().equals(firstName))
                 .findFirst();
     }
@@ -55,7 +55,7 @@ public class PersonRepository {
     }
 
     public void delete(Person person) {
-        personsRepository.remove(person);
+        personRepository.remove(person);
     }
 
     public void deleteByName(String lastName, String firstName) {
@@ -86,7 +86,7 @@ public class PersonRepository {
      */
     public Person save(Person person) {
         logger.debug("call: save()");
-        personsRepository.add(person);
+        personRepository.add(person);
         logger.info("Person added to repository : " + person);
         return person;
     }

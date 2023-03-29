@@ -6,13 +6,13 @@ import org.springframework.context.annotation.Configuration;
 
 /*@Configuration
 public class CustomPropertiesTest {
-    private String dataTestSource;
+    private String dataSource;
 
-    public void setDataSource(String dataTestSource) {
-        this.dataTestSource = dataTestSource;
+    public void setDataSource(String dataSource) {
+        this.dataSource = dataSource;
     }
 
     public String getDataSource() {
-        return dataTestSource;
+        return dataSource;
     }
 }*/

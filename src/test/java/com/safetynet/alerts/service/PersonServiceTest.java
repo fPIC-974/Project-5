@@ -56,8 +56,7 @@ class PersonServiceTest {
         IllegalStateException exception = assertThrows(IllegalStateException.class,
                 () -> personService.deletePersonByName(anyString(), anyString()));
 
-        assertEquals(
-                "Person not found", exception.getMessage());
+        assertEquals("Person not found", exception.getMessage());
     }
 
     @Test
@@ -110,6 +109,8 @@ class PersonServiceTest {
         person = new Person();
         person.setLastName("Doe");
         person.setFirstName("John");
+
+        when(personRepository.existsByName(anyString(), anyString())).thenReturn(false);
 
         IllegalStateException exception = assertThrows(IllegalStateException.class,
                 () -> personService.updatePerson("Doe", "John", person));

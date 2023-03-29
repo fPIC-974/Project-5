@@ -2,11 +2,14 @@ package com.safetynet.alerts.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.safetynet.alerts.model.Person;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -80,5 +83,13 @@ class PersonControllerIT {
                 .andExpect(jsonPath("$.lastName", is("Picard")))
                 .andExpect(jsonPath("$.firstName", is("Fred")))
                 .andExpect(jsonPath("$.email", is("fred@email.com")));
+    }
+
+    // TODO - shouldDeletePerson() test
+    @Test
+    @Disabled
+    public void shouldDeletePerson() throws Exception {
+        mockMvc.perform(get("/person/Boyd/John"))
+                .andExpect(status().isOk());
     }
 }
