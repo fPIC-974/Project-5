@@ -2,6 +2,7 @@ package com.safetynet.alerts.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.safetynet.alerts.model.Person;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,5 +83,13 @@ class PersonControllerIT {
                 .andExpect(jsonPath("$.lastName", is("Picard")))
                 .andExpect(jsonPath("$.firstName", is("Fred")))
                 .andExpect(jsonPath("$.email", is("fred@email.com")));
+    }
+
+    // TODO - shouldDeletePerson() test
+    @Test
+    @Disabled
+    public void shouldDeletePerson() throws Exception {
+        mockMvc.perform(get("/person/Boyd/John"))
+                .andExpect(status().isOk());
     }
 }

@@ -134,6 +134,7 @@ public class FirestationRepository {
         if (toUpdate != null) {
             toUpdate.setAddress(firestation.getAddress());
             toUpdate.setStation(firestation.getStation());
+            logger.info("Firestation updated : {address=" + address + ":station=" + station + "} -> " + toUpdate);
         }
 
         return toUpdate;
@@ -146,6 +147,7 @@ public class FirestationRepository {
      */
     public Firestation save(Firestation firestation) {
         firestationRepository.add(firestation);
+        logger.info("Firestation added : " + firestation);
         return firestation;
     }
 }

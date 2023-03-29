@@ -12,7 +12,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/person")
 public class PersonController {
-    private static final Logger logger = LogManager.getLogger("PersonsController");
+    private static final Logger logger = LogManager.getLogger("Person Controller");
 
     private final PersonService personService;
 
