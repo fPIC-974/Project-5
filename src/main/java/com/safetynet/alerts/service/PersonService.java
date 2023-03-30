@@ -8,10 +8,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class PersonService {
-    private static final Logger logger = LogManager.getLogger("Persons Service");
+    private static final Logger logger = LogManager.getLogger("Person Service");
 
     private PersonRepository personRepository;
 
@@ -26,6 +27,18 @@ public class PersonService {
 
     public Person getPersonByName(String lastName, String firstName) {
         return personRepository.findByName(lastName, firstName).orElse(null);
+    }
+
+    public List<Person> getPersonsByCity(String city) {
+        return getPersons().stream()
+                .filter(p -> p.getCity().equals(city))
+                .toList();
+    }
+
+    public List<Person> getPersonsByAddress(String address) {
+        return getPersons().stream()
+                .filter(person -> person.getAddress().equals(address))
+                .collect(Collectors.toList());
     }
 
     public boolean existsPersonByName(String lastName, String firstName) {

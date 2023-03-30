@@ -8,6 +8,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -60,5 +61,14 @@ public class MedicalrecordService {
             logger.error("Medicalrecord not found : " + firstName + ":" + lastName);
             throw new IllegalStateException("Medicalrecord not found");
         }
+    }
+
+    public int getAge(String lastName, String firstName) {
+        LocalDate dob = getMedicalrecord(lastName, firstName).getBirthdate();
+        return LocalDate.now().compareTo(dob);
+    }
+
+    public boolean isMinor(String lastName, String firstName) {
+        return getAge(lastName, firstName) <= 18;
     }
 }
