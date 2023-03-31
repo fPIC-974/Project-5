@@ -9,6 +9,10 @@ public interface IMedicalrecordRepository {
 
     Optional<Medicalrecord> findByName(String lastName, String firstName);
 
+    Optional<Medicalrecord> find(Medicalrecord medicalrecord);
+
+    boolean exists(Medicalrecord medicalrecord);
+
     boolean existsByName(String lastName, String firstName);
 
     void delete(Medicalrecord medicalrecord);

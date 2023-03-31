@@ -15,7 +15,7 @@ import java.util.Set;
 @RestController
 @RequestMapping("/")
 public class AlertController {
-    private static final Logger logger = LogManager.getLogger("Alert Controller");
+    private static final Logger logger = LogManager.getLogger(AlertController.class);
 
     private final IAlertService alertService;
 

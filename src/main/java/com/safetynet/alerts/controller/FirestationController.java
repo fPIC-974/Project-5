@@ -12,7 +12,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/firestation")
 public class FirestationController {
-    private static final Logger logger = LogManager.getLogger("Firestation Controller");
+    private static final Logger logger = LogManager.getLogger(FirestationController.class);
 
     private final IFirestationService firestationService;
 
@@ -50,6 +50,7 @@ public class FirestationController {
     public Firestation updateFirestation(@PathVariable String address,
                                          @PathVariable int station,
                                          @RequestBody Firestation firestation) {
+
         return firestationService.updateFirestation(address, station, firestation);
     }
 

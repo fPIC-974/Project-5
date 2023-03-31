@@ -13,14 +13,15 @@ import org.springframework.util.ResourceUtils;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
- * Repository of firestations.
+ * Repository of firestations
  */
 @Repository
 public class FirestationRepository implements IFirestationRepository {
-    private static final Logger logger = LogManager.getLogger("Firestation Repository");
+    private static final Logger logger = LogManager.getLogger(FirestationRepository.class);
 
     private List<Firestation> firestationRepository;
 
@@ -49,7 +50,7 @@ public class FirestationRepository implements IFirestationRepository {
     }
 
     /**
-     * Returns an iterable of Firestations
+     * Returns an iterable of Firestation objects
      * @return the iterable of firestations
      */
     @Override
@@ -83,16 +84,16 @@ public class FirestationRepository implements IFirestationRepository {
 
     /**
      * Returns a firestation matching address and station parameters
+     *
      * @param address the value of the address field to be matched
      * @param station the value of the station field to be matched
      * @return the firestation matching the parameters
      */
     @Override
-    public Firestation find(String address, int station) {
+    public Optional<Firestation> find(String address, int station) {
         return firestationRepository.stream()
                 .filter(firestation -> firestation.getAddress().equals(address) && firestation.getStation() == station)
-                .findFirst()
-                .orElse(null);
+                .findFirst();
     }
 
     /**
@@ -113,7 +114,15 @@ public class FirestationRepository implements IFirestationRepository {
      */
     @Override
     public void delete(Firestation firestation) {
-        firestationRepository.remove(firestation);
+        // TODO - Return bool
+        logger.debug("Method called : delete(" + firestation + ")");
+
+        if (!firestationRepository.remove(firestation)) {
+            logger.error("Not found : " + firestation);
+            throw new IllegalStateException("Firestation not found");
+        }
+
+        logger.info("Deleted : " + firestation);
     }
 
     /**
@@ -124,7 +133,17 @@ public class FirestationRepository implements IFirestationRepository {
      */
     @Override
     public void delete(String address, int station) {
-        delete(find(address, station));
+        // TODO - Return bool
+        logger.debug("Method called : delete("
+                + address + ", " + station + ")");
+
+        if (exists(address, station)) {
+            delete(find(address, station).orElse(null));
+        } else {
+            logger.error("Firestation not found :" +
+                    " { address: " + address + ", station: " + station + " }");
+            throw new IllegalStateException("Firestation not found");
+        }
     }
 
     /**
@@ -136,12 +155,20 @@ public class FirestationRepository implements IFirestationRepository {
      */
     @Override
     public Firestation update(String address, int station, Firestation firestation) {
-        Firestation toUpdate = find(address, station);
+        logger.debug("Method called : update("
+                + address + ", " + station + ", " + firestation + ")");
+
+        Firestation toUpdate = find(address, station).orElse(null);
 
         if (toUpdate != null) {
             toUpdate.setAddress(firestation.getAddress());
             toUpdate.setStation(firestation.getStation());
-            logger.info("Firestation updated : {address=" + address + ":station=" + station + "} -> " + toUpdate);
+            logger.info("Firestation updated :" +
+                    " {address=" + address + ":station=" + station + "} -> " + toUpdate);
+        } else {
+            logger.error("Firestation not found :" +
+                    " { address: " + address + ", station: " + station + " }");
+            throw new IllegalStateException("Firestation not found");
         }
 
         return toUpdate;
@@ -150,12 +177,19 @@ public class FirestationRepository implements IFirestationRepository {
     /**
      * Saves a new firestation
      * @param firestation the new firestation to be added
-     * @return the firestation added
+     * @return the firestation added, or null if already exists
      */
     @Override
     public Firestation save(Firestation firestation) {
-        firestationRepository.add(firestation);
-        logger.info("Firestation added : " + firestation);
-        return firestation;
+        logger.debug("Method called : save(" + firestation + ")");
+
+        if (!exists(firestation.getAddress(), firestation.getStation())) {
+            firestationRepository.add(firestation);
+            logger.info("Added : " + firestation);
+            return firestation;
+        } else {
+            logger.error("Already exists : " + firestation);
+            throw new IllegalStateException("Firestation already exists");
+        }
     }
 }

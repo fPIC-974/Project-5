@@ -12,7 +12,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/medicalrecord")
 public class MedicalrecordController {
-    private static final Logger logger = LogManager.getLogger("Medicalrecord Controller");
+    private static final Logger logger = LogManager.getLogger(MedicalrecordController.class);
 
     private final IMedicalrecordService medicalrecordService;
 

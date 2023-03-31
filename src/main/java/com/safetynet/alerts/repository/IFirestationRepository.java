@@ -3,6 +3,7 @@ package com.safetynet.alerts.repository;
 import com.safetynet.alerts.model.Firestation;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface IFirestationRepository {
     Iterable<Firestation> findAll();
@@ -11,7 +12,7 @@ public interface IFirestationRepository {
 
     List<Firestation> findByStation(int station);
 
-    Firestation find(String address, int station);
+    Optional<Firestation> find(String address, int station);
 
     boolean exists(String address, int station);
 

@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class PersonService implements IPersonService {
-    private static final Logger logger = LogManager.getLogger("Person Service");
+    private static final Logger logger = LogManager.getLogger(PersonService.class);
 
     private final IPersonRepository personRepository;
 

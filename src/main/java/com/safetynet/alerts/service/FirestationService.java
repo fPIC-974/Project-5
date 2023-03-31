@@ -11,7 +11,7 @@ import java.util.List;
 
 @Service
 public class FirestationService implements IFirestationService {
-    private static final Logger logger = LogManager.getLogger("Firestations Service");
+    private static final Logger logger = LogManager.getLogger(FirestationService.class);
 
     private final IFirestationRepository firestationRepository;
 
@@ -37,7 +37,7 @@ public class FirestationService implements IFirestationService {
 
     @Override
     public Firestation getFirestation(String address, int station) {
-        return firestationRepository.find(address, station);
+        return firestationRepository.find(address, station).orElse(null);
     }
 
     @Override

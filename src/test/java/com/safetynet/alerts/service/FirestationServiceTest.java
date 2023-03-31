@@ -8,6 +8,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
@@ -28,7 +30,7 @@ class FirestationServiceTest {
         firestation.setAddress("test address");
         firestation.setStation(10);
 
-        when(firestationRepository.find(anyString(), anyInt())).thenReturn(firestation);
+        when(firestationRepository.find(anyString(), anyInt())).thenReturn(Optional.of(firestation));
 
         Firestation toCheck = firestationService.getFirestation("test address", 10);
 

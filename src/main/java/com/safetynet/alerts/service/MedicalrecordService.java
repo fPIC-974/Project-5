@@ -12,7 +12,7 @@ import java.util.List;
 
 @Service
 public class MedicalrecordService implements IMedicalrecordService {
-    private static final Logger logger = LogManager.getLogger("Medicalrecord Service");
+    private static final Logger logger = LogManager.getLogger(MedicalrecordService.class);
 
     private final IMedicalrecordRepository medicalrecordRepository;
 

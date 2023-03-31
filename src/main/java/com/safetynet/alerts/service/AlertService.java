@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class AlertService implements IAlertService {
-    private static final Logger logger = LogManager.getLogger("Alert Service");
+    private static final Logger logger = LogManager.getLogger(AlertService.class);
 
     private final IPersonService personService;
 
