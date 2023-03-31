@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public class PersonRepository {
+public class PersonRepository implements IPersonRepository {
     private static final Logger logger = LogManager.getLogger("Persons Repository");
 
     private List<Person> personRepository;

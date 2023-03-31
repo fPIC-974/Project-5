@@ -1,8 +1,7 @@
 package com.safetynet.alerts.service;
 
 import com.safetynet.alerts.model.Medicalrecord;
-import com.safetynet.alerts.model.Person;
-import com.safetynet.alerts.repository.MedicalrecordRepository;
+import com.safetynet.alerts.repository.IMedicalrecordRepository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,28 +11,32 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Service
-public class MedicalrecordService {
+public class MedicalrecordService implements IMedicalrecordService {
     private static final Logger logger = LogManager.getLogger("Medicalrecord Service");
 
-    private MedicalrecordRepository medicalrecordRepository;
+    private final IMedicalrecordRepository medicalrecordRepository;
 
     @Autowired
-    public MedicalrecordService(MedicalrecordRepository medicalrecordRepository) {
+    public MedicalrecordService(IMedicalrecordRepository medicalrecordRepository) {
         this.medicalrecordRepository = medicalrecordRepository;
     }
 
+    @Override
     public List<Medicalrecord> getMedicalrecords() {
         return (List<Medicalrecord>) medicalrecordRepository.findAll();
     }
 
+    @Override
     public Medicalrecord getMedicalrecord(String lastName, String firstName) {
         return medicalrecordRepository.findByName(lastName, firstName).orElse(null);
     }
 
+    @Override
     public boolean existsMedicalrecord(String lastName, String firstName) {
         return medicalrecordRepository.existsByName(lastName, firstName);
     }
 
+    @Override
     public void deleteMedicalrecordByName(String lastName, String firstName) {
         if (existsMedicalrecord(lastName, firstName)) {
             medicalrecordRepository.deleteByName(lastName, firstName);
@@ -43,6 +46,7 @@ public class MedicalrecordService {
         }
     }
 
+    @Override
     public Medicalrecord saveMedicalrecord(Medicalrecord medicalrecord) {
         if (!existsMedicalrecord(medicalrecord.getLastName(), medicalrecord.getFirstName())) {
             return medicalrecordRepository.save(medicalrecord);
@@ -54,6 +58,7 @@ public class MedicalrecordService {
         }
     }
 
+    @Override
     public Medicalrecord updateMedicalrecord(String lastName, String firstName, Medicalrecord medicalrecord) {
         if (existsMedicalrecord(lastName, firstName)) {
             return medicalrecordRepository.update(lastName, firstName, medicalrecord);
@@ -63,11 +68,13 @@ public class MedicalrecordService {
         }
     }
 
+    @Override
     public int getAge(String lastName, String firstName) {
         LocalDate dob = getMedicalrecord(lastName, firstName).getBirthdate();
         return LocalDate.now().compareTo(dob);
     }
 
+    @Override
     public boolean isMinor(String lastName, String firstName) {
         return getAge(lastName, firstName) <= 18;
     }

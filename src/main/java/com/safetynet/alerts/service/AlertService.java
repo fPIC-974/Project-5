@@ -10,24 +10,30 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Service
-public class AlertService {
+public class AlertService implements IAlertService {
     private static final Logger logger = LogManager.getLogger("Alert Service");
 
-    @Autowired
-    private PersonService personService;
+    private final IPersonService personService;
+
+    private final IFirestationService firestationService;
+
+    private final IMedicalrecordService medicalrecordService;
 
     @Autowired
-    private FirestationService firestationService;
+    public AlertService(IPersonService personService,
+                        IFirestationService firestationService,
+                        IMedicalrecordService medicalrecordService) {
+        this.personService = personService;
+        this.firestationService = firestationService;
+        this.medicalrecordService = medicalrecordService;
+    }
 
-    @Autowired
-    private MedicalrecordService medicalrecordService;
-
+    @Override
     public List<Person> getPersonsCoveredByStation(int station) {
         List<Firestation> firestations = firestationService.getFirestationByStation(station);
         return personService.getPersons().stream()
@@ -36,29 +42,22 @@ public class AlertService {
                 .collect(Collectors.toList());
     }
 
-    public Map<String, Object> getPersonsCovered(int station) {
+    @Override
+    public Map<String, Object> firestation(int station) {
         AtomicInteger majors = new AtomicInteger();
         AtomicInteger minors = new AtomicInteger();
-
-        ObjectMapper objectMapper = new ObjectMapper();
 
         List<Person> persons = getPersonsCoveredByStation(station);
 
         List<ObjectNode> personsCovered = persons.stream()
                 .map(m -> {
-                    ObjectNode personInfo = objectMapper.createObjectNode();
-                    personInfo.put("firstName", m.getFirstName());
-                    personInfo.put("lastName", m.getLastName());
-                    personInfo.put("address", m.getAddress());
-                    personInfo.put("phone", m.getPhone());
-
                     if (medicalrecordService.isMinor(m.getLastName(), m.getFirstName())) {
                         minors.getAndIncrement();
                     } else {
                         majors.getAndIncrement();
                     }
 
-                    return personInfo;
+                    return personDetails(m, true, true, false, false, false);
                 }).toList();
 
         Map<String, Object> mapOfPersonsCovered = new HashMap<>();
@@ -66,16 +65,13 @@ public class AlertService {
         mapOfPersonsCovered.put("majors", majors);
         mapOfPersonsCovered.put("persons", personsCovered);
 
+
+        logger.info("Call   : firestation(" + station + ")");
+        logger.info("Result : " + mapOfPersonsCovered);
         return mapOfPersonsCovered;
     }
 
-    /*public List<Person> getPersonsByAddress(String address) {
-        // TODO Migrate to PersonService
-        return personService.getPersons().stream()
-                .filter(person -> person.getAddress().equals(address))
-                .collect(Collectors.toList());
-    }*/
-
+    @Override
     public Map<String, Object> childAlert(String address) {
         // Children at address ?
         boolean hasChildren = personService.getPersonsByAddress(address).stream()
@@ -85,15 +81,10 @@ public class AlertService {
         List<JsonNode> listOfMembers = new ArrayList<>();
         Map<String, Object> medicalrecordsWithChildren = new HashMap<>();
 
-        ObjectMapper objectMapper = new ObjectMapper();
-
         if (hasChildren) {
             for (Person person : personService.getPersonsByAddress(address)) {
-                ObjectNode personInfo = objectMapper.createObjectNode();
-                personInfo.put("firstName", person.getFirstName());
-                personInfo.put("lastName", person.getLastName());
-                personInfo.put("age", medicalrecordService.getAge(person.getLastName(), person.getFirstName()));
 
+                ObjectNode personInfo = personDetails(person, false, false, true, false, false);
                 if (medicalrecordService.isMinor(person.getLastName(), person.getFirstName())) {
                     listOfChildren.add(personInfo);
                 } else {
@@ -105,77 +96,67 @@ public class AlertService {
         medicalrecordsWithChildren.put("children", listOfChildren);
         medicalrecordsWithChildren.put("members", listOfMembers);
 
+        logger.info("Call   : childAlert(" + address + ")");
+        logger.info("Result : " + medicalrecordsWithChildren);
         return medicalrecordsWithChildren;
     }
 
+    @Override
     public Set<String> phoneAlert(int station) {
-        return getPersonsCoveredByStation(station).stream()
+        Set<String> phoneNumbers = getPersonsCoveredByStation(station).stream()
                 .map(Person::getPhone)
                 .collect(Collectors.toSet());
+
+        logger.info("Call   : phoneAlert(" + station + ")");
+        logger.info("Result : " + phoneNumbers);
+        return phoneNumbers;
     }
 
+    @Override
     public Map<String, Object> fire(String address) {
-        ObjectMapper objectMapper = new ObjectMapper();
         Set<Integer> firestationsID = firestationService.getFirestationByAddress(address).stream()
                 .filter(f -> f.getAddress().equals(address))
                 .map(Firestation::getStation)
                 .collect(Collectors.toSet());
 
         List<ObjectNode> persons = personService.getPersonsByAddress(address).stream()
-                .map(p -> {
-                    ObjectNode personInfo = objectMapper.createObjectNode();
-
-                    personInfo.put("firstName", p.getFirstName());
-                    personInfo.put("lastName", p.getLastName());
-                    personInfo.put("phone", p.getPhone());
-                    personInfo.put("age", medicalrecordService.getAge(p.getLastName(), p.getFirstName()));
-                    personInfo.set("medications", objectMapper.valueToTree(
-                            medicalrecordService.getMedicalrecord(p.getLastName(), p.getFirstName()).getMedications()));
-                    personInfo.set("allergies", objectMapper.valueToTree(
-                            medicalrecordService.getMedicalrecord(p.getLastName(), p.getFirstName()).getAllergies()));
-
-                    return personInfo;
-                }).toList();
-
+                .map(p -> personDetails(p, false, true, true, false, true)).toList();
 
         Map<String, Object> mapOfPersons = new HashMap<>();
         mapOfPersons.put("address", address);
         mapOfPersons.put("stationNumber", firestationsID);
         mapOfPersons.put("persons", persons);
 
+        logger.info("Call   : fire(" + address + ")");
+        logger.info("Result : " + mapOfPersons);
         return mapOfPersons;
     }
 
+    @Override
     public JsonNode personInfo(String lastName, String firstName) {
-
-        ObjectMapper objectMapper = new ObjectMapper();
-
         Person person = personService.getPersonByName(lastName, firstName);
 
-        ObjectNode personDetails = objectMapper.createObjectNode();
-        personDetails.put("firstName", person.getFirstName());
-        personDetails.put("lastName", person.getLastName());
-        personDetails.put("address", person.getAddress());
-        personDetails.put("age", medicalrecordService.getAge(lastName, firstName));
-        personDetails.put("email", person.getEmail());
-        personDetails.set("medications", objectMapper.valueToTree(
-                medicalrecordService.getMedicalrecord(person.getLastName(), person.getFirstName()).getMedications()));
-        personDetails.set("allergies", objectMapper.valueToTree(
-                medicalrecordService.getMedicalrecord(person.getLastName(), person.getFirstName()).getAllergies()));
+        ObjectNode personInfo = personDetails(person, true, false, true, true, true);
 
-        return personDetails;
+        logger.info("Call   : personInfo(" + lastName + ", " + firstName + ")");
+        logger.info("Result : " + personInfo);
+        return personInfo;
     }
 
+    @Override
     public Set<String> communityEmail(String city) {
-        return personService.getPersonsByCity(city).stream()
+        Set<String> emails = personService.getPersonsByCity(city).stream()
                 .map(Person::getEmail)
                 .collect(Collectors.toSet());
+
+        logger.info("Call   : communityEmail(" + city + ")");
+        logger.info("Result : " + emails);
+        return emails;
     }
 
+    @Override
     public Map<String, List<ObjectNode>> flood(int[] stations) {
         Set<Firestation> firestations = new HashSet<>();
-        Map<String, Object> mapOfPersons = new HashMap<>();
-        ObjectMapper objectMapper = new ObjectMapper();
 
         for (int station : stations) {
             firestations.addAll(firestationService.getFirestationByStation(station));
@@ -184,9 +165,6 @@ public class AlertService {
         Set<Person> persons = new HashSet<>();
 
         for (Firestation station : firestations) {
-            List<Person> personList = getPersonsCoveredByStation(station.getStation());
-
-
             persons.addAll(getPersonsCoveredByStation(station.getStation()));
         }
 
@@ -197,23 +175,39 @@ public class AlertService {
         for (var entry : test.entrySet()) {
             String key = entry.getKey();
             List<ObjectNode> personList = entry.getValue().stream()
-                    .map(p -> {
-                        ObjectNode personInfo = objectMapper.createObjectNode();
-
-                        personInfo.put("firstName", p.getFirstName());
-                        personInfo.put("lastName", p.getLastName());
-                        personInfo.put("phone", p.getPhone());
-                        personInfo.put("age", medicalrecordService.getAge(p.getLastName(), p.getFirstName()));
-                        personInfo.set("medications", objectMapper.valueToTree(
-                                medicalrecordService.getMedicalrecord(p.getLastName(), p.getFirstName()).getMedications()));
-                        personInfo.set("allergies", objectMapper.valueToTree(
-                                medicalrecordService.getMedicalrecord(p.getLastName(), p.getFirstName()).getAllergies()));
-
-                        return personInfo;
-                    }).toList();
+                    .map(p -> personDetails(p, false, true, true, false, true)).toList();
             mapOfNodes.put(key, personList);
         }
 
+        logger.info("Call   : flood(" + Arrays.toString(stations) + ")");
+        logger.info("Result : " + mapOfNodes);
         return mapOfNodes;
+    }
+
+    @Override
+    public ObjectNode personDetails(Person person,
+                                    boolean address,
+                                    boolean phone,
+                                    boolean age,
+                                    boolean email,
+                                    boolean medicalinfo) {
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        ObjectNode personInfo = objectMapper.createObjectNode();
+
+        personInfo.put("firstName", person.getFirstName());
+        personInfo.put("lastName", person.getLastName());
+        if (address) { personInfo.put("address", person.getAddress()); }
+        if (phone) { personInfo.put("phone", person.getPhone()); }
+        if (age) { personInfo.put("age", medicalrecordService.getAge(person.getLastName(), person.getFirstName())); }
+        if (email) { personInfo.put("email", person.getEmail()); }
+        if (medicalinfo) {
+            personInfo.set("medications", objectMapper.valueToTree(
+                    medicalrecordService.getMedicalrecord(person.getLastName(), person.getFirstName()).getMedications()));
+            personInfo.set("allergies", objectMapper.valueToTree(
+                    medicalrecordService.getMedicalrecord(person.getLastName(), person.getFirstName()).getAllergies()));
+        }
+
+        return personInfo;
     }
 }

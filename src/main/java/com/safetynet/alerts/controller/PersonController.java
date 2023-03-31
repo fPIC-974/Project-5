@@ -1,7 +1,7 @@
 package com.safetynet.alerts.controller;
 
 import com.safetynet.alerts.model.Person;
-import com.safetynet.alerts.service.PersonService;
+import com.safetynet.alerts.service.IPersonService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,10 +14,10 @@ import java.util.List;
 public class PersonController {
     private static final Logger logger = LogManager.getLogger("Person Controller");
 
-    private final PersonService personService;
+    private final IPersonService personService;
 
     @Autowired
-    public PersonController(PersonService personService) {
+    public PersonController(IPersonService personService) {
         this.personService = personService;
     }
 

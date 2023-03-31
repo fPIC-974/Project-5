@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public class MedicalrecordRepository {
+public class MedicalrecordRepository implements IMedicalrecordRepository {
     private static final Logger logger = LogManager.getLogger("Medicalrecord Repository");
 
     private List<Medicalrecord> medicalrecordRepository;
@@ -43,10 +43,12 @@ public class MedicalrecordRepository {
         }
     }
 
+    @Override
     public Iterable<Medicalrecord> findAll() {
         return medicalrecordRepository;
     }
 
+    @Override
     public Optional<Medicalrecord> findByName(String lastName, String firstName) {
         return medicalrecordRepository.stream()
                 .filter(medicalrecord ->
@@ -54,20 +56,24 @@ public class MedicalrecordRepository {
                 .findFirst();
     }
 
+    @Override
     public boolean existsByName(String lastName, String firstName) {
         return findByName(lastName, firstName).isPresent();
     }
 
+    @Override
     public void delete(Medicalrecord medicalrecord) {
         logger.debug("call: delete()");
         medicalrecordRepository.remove(medicalrecord);
         logger.info("Medicalrecord deleted from repository : " + medicalrecord);
     }
 
+    @Override
     public void deleteByName(String lastName, String firstName) {
         delete(findByName(lastName, firstName).orElse(null));
     }
 
+    @Override
     public Medicalrecord update(String lastName, String firstName, Medicalrecord medicalrecord) {
         logger.debug("call: update()");
         return findByName(lastName, firstName).stream()
@@ -82,6 +88,7 @@ public class MedicalrecordRepository {
                 .orElse(null);
     }
 
+    @Override
     public Medicalrecord save(Medicalrecord medicalrecord) {
         logger.debug("call: save()");
         medicalrecordRepository.add(medicalrecord);

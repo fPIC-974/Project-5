@@ -2,9 +2,7 @@ package com.safetynet.alerts.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.safetynet.alerts.model.Person;
-import com.safetynet.alerts.service.AlertService;
-import com.safetynet.alerts.service.PersonService;
+import com.safetynet.alerts.service.IAlertService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,16 +17,16 @@ import java.util.Set;
 public class AlertController {
     private static final Logger logger = LogManager.getLogger("Alert Controller");
 
-    private final AlertService alertService;
+    private final IAlertService alertService;
 
     @Autowired
-    public AlertController(AlertService alertService) {
+    public AlertController(IAlertService alertService) {
         this.alertService = alertService;
     }
 
     @GetMapping("/firestation")
     public Map<String, Object> firestation(@RequestParam int stationNumber) {
-        return alertService.getPersonsCovered(stationNumber);
+        return alertService.firestation(stationNumber);
     }
 
     @GetMapping("/childAlert")

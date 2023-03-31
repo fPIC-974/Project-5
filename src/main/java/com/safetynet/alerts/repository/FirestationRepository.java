@@ -13,14 +13,13 @@ import org.springframework.util.ResourceUtils;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
  * Repository of firestations.
  */
 @Repository
-public class FirestationRepository {
+public class FirestationRepository implements IFirestationRepository {
     private static final Logger logger = LogManager.getLogger("Firestation Repository");
 
     private List<Firestation> firestationRepository;
@@ -53,6 +52,7 @@ public class FirestationRepository {
      * Returns an iterable of Firestations
      * @return the iterable of firestations
      */
+    @Override
     public Iterable<Firestation> findAll() {
         return firestationRepository;
     }
@@ -62,6 +62,7 @@ public class FirestationRepository {
      * @param address the value of the field to be matched
      * @return a list of elements matching the parameter
      */
+    @Override
     public List<Firestation> findByAddress(String address) {
         return firestationRepository.stream()
                 .filter(firestation -> firestation.getAddress().equals(address))
@@ -73,6 +74,7 @@ public class FirestationRepository {
      * @param station the value of the field to be matched
      * @return a list of elements matching the parameter
      */
+    @Override
     public List<Firestation> findByStation(int station) {
         return firestationRepository.stream()
                 .filter(firestation -> firestation.getStation() == station)
@@ -85,6 +87,7 @@ public class FirestationRepository {
      * @param station the value of the station field to be matched
      * @return the firestation matching the parameters
      */
+    @Override
     public Firestation find(String address, int station) {
         return firestationRepository.stream()
                 .filter(firestation -> firestation.getAddress().equals(address) && firestation.getStation() == station)
@@ -98,6 +101,7 @@ public class FirestationRepository {
      * @param station the value of the station field to be matched
      * @return true if the object is found, false otherwise
      */
+    @Override
     public boolean exists(String address, int station) {
         return findByAddress(address).stream()
                 .anyMatch(firestation -> firestation.getStation() == station && firestation.getAddress().equals(address));
@@ -107,6 +111,7 @@ public class FirestationRepository {
      * Deletes a given firestation
      * @param firestation the object to be deleted
      */
+    @Override
     public void delete(Firestation firestation) {
         firestationRepository.remove(firestation);
     }
@@ -117,6 +122,7 @@ public class FirestationRepository {
      * @param address the value of the address field to be matched
      * @param station the value of the station field to be matched
      */
+    @Override
     public void delete(String address, int station) {
         delete(find(address, station));
     }
@@ -128,6 +134,7 @@ public class FirestationRepository {
      * @param firestation the new firestation object
      * @return the new firestation object, or null if no match
      */
+    @Override
     public Firestation update(String address, int station, Firestation firestation) {
         Firestation toUpdate = find(address, station);
 
@@ -145,6 +152,7 @@ public class FirestationRepository {
      * @param firestation the new firestation to be added
      * @return the firestation added
      */
+    @Override
     public Firestation save(Firestation firestation) {
         firestationRepository.add(firestation);
         logger.info("Firestation added : " + firestation);

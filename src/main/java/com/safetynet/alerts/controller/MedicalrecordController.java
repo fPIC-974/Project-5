@@ -1,9 +1,7 @@
 package com.safetynet.alerts.controller;
 
 import com.safetynet.alerts.model.Medicalrecord;
-import com.safetynet.alerts.model.Person;
-import com.safetynet.alerts.service.MedicalrecordService;
-import com.safetynet.alerts.service.PersonService;
+import com.safetynet.alerts.service.IMedicalrecordService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,10 +14,10 @@ import java.util.List;
 public class MedicalrecordController {
     private static final Logger logger = LogManager.getLogger("Medicalrecord Controller");
 
-    private final MedicalrecordService medicalrecordService;
+    private final IMedicalrecordService medicalrecordService;
 
     @Autowired
-    public MedicalrecordController(MedicalrecordService medicalrecordService) {
+    public MedicalrecordController(IMedicalrecordService medicalrecordService) {
         this.medicalrecordService = medicalrecordService;
     }
 

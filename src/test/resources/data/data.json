@@ -41,6 +41,7 @@
         { "address":"951 LoneTree Rd", "station":"2" }
 	],
     "medicalrecords": [
+        { "firstName":"Fred", "lastName":"Picard", "birthdate":"01/06/1974", "medications":[], "allergies":[] },
         { "firstName":"John", "lastName":"Boyd", "birthdate":"03/06/1984", "medications":["aznol:350mg", "hydrapermazol:100mg"], "allergies":["nillacilan"] },
         { "firstName":"Jacob", "lastName":"Boyd", "birthdate":"03/06/1989", "medications":["pharmacol:5000mg", "terazine:10mg", "noznazol:250mg"], "allergies":[] },
         { "firstName":"Tenley", "lastName":"Boyd", "birthdate":"02/18/2012", "medications":[], "allergies":["peanut"] },
