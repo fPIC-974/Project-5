@@ -6,11 +6,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.safetynet.alerts.model.Person;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.ResourceUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,7 +34,7 @@ public class PersonRepository implements IPersonRepository {
     public PersonRepository(CustomProperties properties) {
         this.properties = properties;
         try {
-            File dataSource = ResourceUtils.getFile("classpath:" + this.properties.getDataSource());
+            InputStream dataSource = new ClassPathResource(this.properties.getDataSource()).getInputStream();
 
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode jsonNode = objectMapper.readTree(dataSource);
