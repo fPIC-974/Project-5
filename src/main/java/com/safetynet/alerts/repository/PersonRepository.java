@@ -3,6 +3,8 @@ package com.safetynet.alerts.repository;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.safetynet.alerts.exception.AlreadyExistsException;
+import com.safetynet.alerts.exception.NotFoundException;
 import com.safetynet.alerts.model.Person;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -87,12 +89,12 @@ public class PersonRepository implements IPersonRepository {
      * @param person the person object to be deleted
      */
     @Override
-    public void delete(Person person) {
+    public void delete(Person person) throws NotFoundException {
         logger.debug("Method called : delete(" + person + ")");
 
         if(!personRepository.remove(person)) {
             logger.error("Not found : " + person);
-            throw new IllegalStateException("Person not found");
+            throw new NotFoundException("Person not found");
         }
 
         logger.info("Deleted : " + person);
@@ -105,7 +107,7 @@ public class PersonRepository implements IPersonRepository {
      * @param firstName the value of the firstname field to be matched
      */
     @Override
-    public void deleteByName(String lastName, String firstName) {
+    public void deleteByName(String lastName, String firstName) throws NotFoundException {
         // TODO - Override delete(Person)
         // TODO - Return bool
         logger.debug("Method called : deleteByName("
@@ -116,7 +118,7 @@ public class PersonRepository implements IPersonRepository {
         } else {
             logger.error("Person not found :" +
                     " { lastName: " + lastName + ", firstName: " + firstName + " }");
-            throw new IllegalStateException("Person not found");
+            throw new NotFoundException("Person not found");
         }
     }
 
@@ -129,7 +131,7 @@ public class PersonRepository implements IPersonRepository {
      * @return the updated person object, or null if no match
      */
     @Override
-    public Person update(String lastName, String firstName, Person person) {
+    public Person update(String lastName, String firstName, Person person) throws NotFoundException {
         logger.debug("Method called : update("
                 + lastName + ", " + firstName + ", " + person + ")");
 
@@ -147,7 +149,7 @@ public class PersonRepository implements IPersonRepository {
         } else {
             logger.error("Person not found :" +
                     " { lastName: " + lastName + ", firstName: " + firstName + " }");
-            throw new IllegalStateException("Person not found");
+            throw new NotFoundException("Person not found");
         }
 
         return toUpdate;
@@ -159,7 +161,7 @@ public class PersonRepository implements IPersonRepository {
      * @return the added person object, or null if already exists
      */
     @Override
-    public Person save(Person person) {
+    public Person save(Person person) throws AlreadyExistsException {
         logger.debug("Method called : save(" + person + ")");
 
         if (!existsByName(person.getLastName(), person.getFirstName())) {
@@ -168,7 +170,7 @@ public class PersonRepository implements IPersonRepository {
             return person;
         } else {
             logger.error("Already exists : " + person);
-            throw new IllegalStateException("Person already exists");
+            throw new AlreadyExistsException("Person already exists");
         }
     }
 }

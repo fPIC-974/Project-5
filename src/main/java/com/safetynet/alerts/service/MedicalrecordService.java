@@ -1,5 +1,7 @@
 package com.safetynet.alerts.service;
 
+import com.safetynet.alerts.exception.AlreadyExistsException;
+import com.safetynet.alerts.exception.NotFoundException;
 import com.safetynet.alerts.model.Medicalrecord;
 import com.safetynet.alerts.repository.IMedicalrecordRepository;
 import org.apache.logging.log4j.LogManager;
@@ -62,12 +64,12 @@ public class MedicalrecordService implements IMedicalrecordService {
      * @param firstName the value of the firstname field to be matched
      */
     @Override
-    public void deleteMedicalrecordByName(String lastName, String firstName) {
+    public void deleteMedicalrecordByName(String lastName, String firstName) throws NotFoundException{
         if (existsMedicalrecord(lastName, firstName)) {
             medicalrecordRepository.deleteByName(lastName, firstName);
         } else {
             logger.error("Medicalrecord not found : " + firstName + ":" + lastName);
-            throw new IllegalStateException("Medicalrecord not found");
+            throw new NotFoundException("Medicalrecord not found");
         }
     }
 
@@ -77,14 +79,14 @@ public class MedicalrecordService implements IMedicalrecordService {
      * @return the added Medicalrecord object, or null if already exists
      */
     @Override
-    public Medicalrecord saveMedicalrecord(Medicalrecord medicalrecord) {
+    public Medicalrecord saveMedicalrecord(Medicalrecord medicalrecord) throws AlreadyExistsException {
         if (!existsMedicalrecord(medicalrecord.getLastName(), medicalrecord.getFirstName())) {
             return medicalrecordRepository.save(medicalrecord);
         } else {
             logger.error("Medicalrecord already exists : "
                     + medicalrecord.getFirstName() + ":"
                     + medicalrecord.getLastName());
-            throw new IllegalStateException("Medicalrecord already exists");
+            throw new AlreadyExistsException("Medicalrecord already exists");
         }
     }
 
@@ -97,12 +99,12 @@ public class MedicalrecordService implements IMedicalrecordService {
      * @return the updated Medicalrecord object, or null if no match
      */
     @Override
-    public Medicalrecord updateMedicalrecord(String lastName, String firstName, Medicalrecord medicalrecord) {
+    public Medicalrecord updateMedicalrecord(String lastName, String firstName, Medicalrecord medicalrecord) throws NotFoundException {
         if (existsMedicalrecord(lastName, firstName)) {
             return medicalrecordRepository.update(lastName, firstName, medicalrecord);
         } else {
             logger.error("Medicalrecord not found : " + firstName + ":" + lastName);
-            throw new IllegalStateException("Medicalrecord not found");
+            throw new NotFoundException("Medicalrecord not found");
         }
     }
 

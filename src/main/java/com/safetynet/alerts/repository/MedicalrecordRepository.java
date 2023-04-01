@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.safetynet.alerts.exception.AlreadyExistsException;
+import com.safetynet.alerts.exception.NotFoundException;
 import com.safetynet.alerts.model.Medicalrecord;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -112,12 +114,12 @@ public class MedicalrecordRepository implements IMedicalrecordRepository {
      * @param medicalrecord the medicalrecord object to be deleted
      */
     @Override
-    public void delete(Medicalrecord medicalrecord) {
+    public void delete(Medicalrecord medicalrecord) throws NotFoundException {
         logger.debug("Method called : delete(" + medicalrecord + ")");
 
         if(!medicalrecordRepository.remove(medicalrecord)) {
             logger.error("Not found : " + medicalrecord);
-            throw new IllegalStateException("Medicalrecord not found");
+            throw new NotFoundException("Medicalrecord not found");
         }
 
         logger.info("Deleted : " + medicalrecord);
@@ -130,7 +132,7 @@ public class MedicalrecordRepository implements IMedicalrecordRepository {
      * @param firstName the value of the firstname field to be matched
      */
     @Override
-    public void deleteByName(String lastName, String firstName) {
+    public void deleteByName(String lastName, String firstName) throws NotFoundException {
         // TODO - Return bool
         logger.debug("Method called : deleteByName("
                 + lastName + ", " + firstName + ")");
@@ -140,7 +142,7 @@ public class MedicalrecordRepository implements IMedicalrecordRepository {
         } else {
             logger.error("Medicalrecord not found :" +
                     " { lastName: " + lastName + ", firstName: " + firstName + " }");
-            throw new IllegalStateException("Medicalrecord not found");
+            throw new NotFoundException("Medicalrecord not found");
         }
     }
 
@@ -153,7 +155,7 @@ public class MedicalrecordRepository implements IMedicalrecordRepository {
      * @return the updated Medicalrecord object, or null if no match
      */
     @Override
-    public Medicalrecord update(String lastName, String firstName, Medicalrecord medicalrecord) {
+    public Medicalrecord update(String lastName, String firstName, Medicalrecord medicalrecord) throws NotFoundException {
         logger.debug("Method called : update("
                 + lastName + ", " + firstName + ", " + medicalrecord + ")");
 
@@ -172,7 +174,7 @@ public class MedicalrecordRepository implements IMedicalrecordRepository {
         } else {
             logger.error("Medicalrecord not found :" +
                     " { lastName: " + lastName + ", firstName: " + firstName + " }");
-            throw new IllegalStateException("Medicalrecord not found");
+            throw new NotFoundException("Medicalrecord not found");
         }
 
         return toUpdate;
@@ -184,7 +186,7 @@ public class MedicalrecordRepository implements IMedicalrecordRepository {
      * @return the added Medicalrecord object, or null if already exists
      */
     @Override
-    public Medicalrecord save(Medicalrecord medicalrecord) {
+    public Medicalrecord save(Medicalrecord medicalrecord) throws AlreadyExistsException {
         logger.debug("Method called : save(" + medicalrecord + ")");
 
         if (!exists(medicalrecord)) {
@@ -193,7 +195,7 @@ public class MedicalrecordRepository implements IMedicalrecordRepository {
             return medicalrecord;
         } else {
             logger.error("Already exists : " + medicalrecord);
-            throw new IllegalStateException("Medicalrecord already exists");
+            throw new AlreadyExistsException("Medicalrecord already exists");
         }
     }
 }

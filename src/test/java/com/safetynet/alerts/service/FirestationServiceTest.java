@@ -1,5 +1,7 @@
 package com.safetynet.alerts.service;
 
+import com.safetynet.alerts.exception.AlreadyExistsException;
+import com.safetynet.alerts.exception.NotFoundException;
 import com.safetynet.alerts.model.Firestation;
 import com.safetynet.alerts.repository.FirestationRepository;
 import org.junit.jupiter.api.Test;
@@ -40,7 +42,7 @@ class FirestationServiceTest {
     }
 
     @Test
-    public void deleteExistingFirestation() {
+    public void deleteExistingFirestation() throws NotFoundException {
         Firestation firestation = new Firestation();
         firestation.setAddress("test address");
         firestation.setStation(10);
@@ -52,7 +54,7 @@ class FirestationServiceTest {
     }
 
     @Test
-    public void deleteExistingFirestationByAddress() {
+    public void deleteExistingFirestationByAddress() throws NotFoundException {
         when(firestationRepository.exists(anyString(), anyInt())).thenReturn(true);
 
         firestationService.deleteFirestation(anyString(), anyInt());
@@ -61,13 +63,13 @@ class FirestationServiceTest {
     }
 
     @Test
-    public void deleteNonExistingFirestation() {
+    public void deleteNonExistingFirestation() throws NotFoundException {
         Firestation firestation = new Firestation();
         firestation.setAddress("test address");
         firestation.setStation(10);
         when(firestationRepository.exists(anyString(), anyInt())).thenReturn(false);
 
-        IllegalStateException exception = assertThrows(IllegalStateException.class,
+        NotFoundException exception = assertThrows(NotFoundException.class,
                 () -> firestationService.deleteFirestation(firestation));
 
         assertEquals("Firestation not found", exception.getMessage());
@@ -77,14 +79,14 @@ class FirestationServiceTest {
     public void deleteNonExistingFirestationByAddress() {
         when(firestationRepository.exists(anyString(), anyInt())).thenReturn(false);
 
-        IllegalStateException exception = assertThrows(IllegalStateException.class,
+        NotFoundException exception = assertThrows(NotFoundException.class,
                 () -> firestationService.deleteFirestation(anyString(), anyInt()));
 
         assertEquals("Firestation not found", exception.getMessage());
     }
 
     @Test
-    public void updateExistingFirestation() {
+    public void updateExistingFirestation() throws NotFoundException {
         Firestation firestation = new Firestation();
         firestation.setAddress("test address");
         firestation.setStation(15);
@@ -97,35 +99,35 @@ class FirestationServiceTest {
     }
 
     @Test
-    public void updateNonExistingFirestation() {
+    public void updateNonExistingFirestation() throws NotFoundException {
         Firestation firestation = new Firestation();
         firestation.setAddress("test address");
         firestation.setStation(15);
 
         when(firestationRepository.exists("test address", 10)).thenReturn(false);
 
-        IllegalStateException exception = assertThrows(IllegalStateException.class,
+        NotFoundException exception = assertThrows(NotFoundException.class,
                 () -> firestationService.updateFirestation("test address", 10, firestation));
 
         assertEquals("Firestation not found", exception.getMessage());
     }
 
     @Test
-    public void saveExistingFirestation() {
+    public void saveExistingFirestation() throws AlreadyExistsException {
         Firestation firestation = new Firestation();
         firestation.setAddress("test address");
         firestation.setStation(15);
 
         when(firestationRepository.exists("test address", 15)).thenReturn(true);
 
-        IllegalStateException exception = assertThrows(IllegalStateException.class,
+        AlreadyExistsException exception = assertThrows(AlreadyExistsException.class,
                 () -> firestationService.saveFirestation(firestation));
 
         assertEquals("Firestation already exists", exception.getMessage());
     }
 
     @Test
-    public void saveNonExistingFirestation() {
+    public void saveNonExistingFirestation() throws AlreadyExistsException {
         Firestation firestation = new Firestation();
         firestation.setAddress("test address");
         firestation.setStation(15);

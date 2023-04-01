@@ -1,6 +1,7 @@
 package com.safetynet.alerts.service;
 
-import com.safetynet.alerts.exception.AlertsException;
+import com.safetynet.alerts.exception.AlreadyExistsException;
+import com.safetynet.alerts.exception.NotFoundException;
 import com.safetynet.alerts.model.Firestation;
 import com.safetynet.alerts.repository.IFirestationRepository;
 import org.apache.logging.log4j.LogManager;
@@ -81,12 +82,12 @@ public class FirestationService implements IFirestationService {
      * @param firestation the object to be deleted
      */
     @Override
-    public void deleteFirestation(Firestation firestation) {
+    public void deleteFirestation(Firestation firestation) throws NotFoundException {
         if (existsFirestation(firestation.getAddress(), firestation.getStation())) {
             firestationRepository.delete(firestation);
         } else {
             logger.error("Firestation not found: " + firestation);
-            throw new IllegalStateException("Firestation not found");
+            throw new NotFoundException("Firestation not found");
         }
     }
 
@@ -97,12 +98,12 @@ public class FirestationService implements IFirestationService {
      * @param station the value of the station field to be matched
      */
     @Override
-    public void deleteFirestation(String address, int station) {
+    public void deleteFirestation(String address, int station)  throws NotFoundException {
         if (existsFirestation(address, station)) {
             firestationRepository.delete(address, station);
         } else {
             logger.error("Firestation not found: " + address + ":" + station);
-            throw new IllegalStateException("Firestation not found");
+            throw new NotFoundException("Firestation not found");
         }
     }
 
@@ -114,12 +115,12 @@ public class FirestationService implements IFirestationService {
      * @return the new firestation object, or null if no match
      */
     @Override
-    public Firestation updateFirestation(String address, int station, Firestation firestation) {
+    public Firestation updateFirestation(String address, int station, Firestation firestation) throws NotFoundException {
         if (existsFirestation(address, station)) {
             return firestationRepository.update(address, station, firestation);
         } else {
             logger.error("Firestation not found: " + address + ":" + station);
-            throw new IllegalStateException("Firestation not found");
+            throw new NotFoundException("Firestation not found");
         }
     }
 
@@ -129,12 +130,12 @@ public class FirestationService implements IFirestationService {
      * @return the firestation added, or null if already exists
      */
     @Override
-    public Firestation saveFirestation(Firestation firestation) {
+    public Firestation saveFirestation(Firestation firestation) throws AlreadyExistsException {
         if (!existsFirestation(firestation.getAddress(), firestation.getStation())) {
             return firestationRepository.save(firestation);
         } else {
             logger.error("Firestation already exists: " + firestation);
-            throw new IllegalStateException("Firestation already exists");
+            throw new AlreadyExistsException("Firestation already exists");
         }
     }
 }

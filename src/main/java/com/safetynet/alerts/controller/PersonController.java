@@ -1,5 +1,7 @@
 package com.safetynet.alerts.controller;
 
+import com.safetynet.alerts.exception.AlreadyExistsException;
+import com.safetynet.alerts.exception.NotFoundException;
 import com.safetynet.alerts.model.Person;
 import com.safetynet.alerts.service.IPersonService;
 import org.apache.logging.log4j.LogManager;
@@ -32,19 +34,19 @@ public class PersonController {
     }
 
     @PostMapping
-    public Person savePerson(@RequestBody Person person) {
+    public Person savePerson(@RequestBody Person person) throws AlreadyExistsException {
         return personService.savePerson(person);
     }
 
     @PutMapping("/{lastName}/{firstName}")
     public Person updatePerson(@PathVariable String lastName,
                                @PathVariable String firstName,
-                               @RequestBody Person person) {
+                               @RequestBody Person person) throws NotFoundException {
         return personService.updatePerson(lastName, firstName, person);
     }
 
     @DeleteMapping("/{lastName}/{firstName}")
-    public void deletePerson(@PathVariable String lastName, @PathVariable String firstName) {
+    public void deletePerson(@PathVariable String lastName, @PathVariable String firstName) throws NotFoundException {
         personService.deletePersonByName(lastName, firstName);
     }
 }

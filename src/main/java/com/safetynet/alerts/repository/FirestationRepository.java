@@ -4,20 +4,17 @@ package com.safetynet.alerts.repository;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.safetynet.alerts.exception.NotFoundException;
 import com.safetynet.alerts.model.Firestation;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Repository;
-import org.springframework.util.ResourceUtils;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.stream.Collectors;
 
 /**
@@ -117,13 +114,13 @@ public class FirestationRepository implements IFirestationRepository {
      * @param firestation the object to be deleted
      */
     @Override
-    public void delete(Firestation firestation) {
+    public void delete(Firestation firestation) throws NotFoundException {
         // TODO - Return bool
         logger.debug("Method called : delete(" + firestation + ")");
 
         if (!firestationRepository.remove(firestation)) {
             logger.error("Not found : " + firestation);
-            throw new IllegalStateException("Firestation not found");
+            throw new NotFoundException("Firestation not found");
         }
 
         logger.info("Deleted : " + firestation);
@@ -136,7 +133,7 @@ public class FirestationRepository implements IFirestationRepository {
      * @param station the value of the station field to be matched
      */
     @Override
-    public void delete(String address, int station) {
+    public void delete(String address, int station) throws NotFoundException {
         // TODO - Return bool
         logger.debug("Method called : delete("
                 + address + ", " + station + ")");
@@ -146,7 +143,7 @@ public class FirestationRepository implements IFirestationRepository {
         } else {
             logger.error("Firestation not found :" +
                     " { address: " + address + ", station: " + station + " }");
-            throw new IllegalStateException("Firestation not found");
+            throw new NotFoundException("Firestation not found");
         }
     }
 
@@ -158,7 +155,7 @@ public class FirestationRepository implements IFirestationRepository {
      * @return the new firestation object, or null if no match
      */
     @Override
-    public Firestation update(String address, int station, Firestation firestation) {
+    public Firestation update(String address, int station, Firestation firestation) throws NotFoundException {
         logger.debug("Method called : update("
                 + address + ", " + station + ", " + firestation + ")");
 
@@ -172,7 +169,7 @@ public class FirestationRepository implements IFirestationRepository {
         } else {
             logger.error("Firestation not found :" +
                     " { address: " + address + ", station: " + station + " }");
-            throw new IllegalStateException("Firestation not found");
+            throw new NotFoundException("Firestation not found");
         }
 
         return toUpdate;

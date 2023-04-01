@@ -1,5 +1,7 @@
 package com.safetynet.alerts.service;
 
+import com.safetynet.alerts.exception.AlreadyExistsException;
+import com.safetynet.alerts.exception.NotFoundException;
 import com.safetynet.alerts.model.Person;
 import com.safetynet.alerts.repository.IPersonRepository;
 import org.apache.logging.log4j.LogManager;
@@ -85,12 +87,12 @@ public class PersonService implements IPersonService {
      * @param firstName the value of the firstname field to be matched
      */
     @Override
-    public void deletePersonByName(String lastName, String firstName) {
+    public void deletePersonByName(String lastName, String firstName) throws NotFoundException{
         if (existsPersonByName(lastName, firstName)) {
             personRepository.deleteByName(lastName, firstName);
         } else {
             logger.error("Person not found");
-            throw new IllegalStateException("Person not found");
+            throw new NotFoundException("Person not found");
         }
     }
 
@@ -100,12 +102,12 @@ public class PersonService implements IPersonService {
      * @return the added person object, or null if already exists
      */
     @Override
-    public Person savePerson(Person person) {
+    public Person savePerson(Person person) throws AlreadyExistsException {
         if (!existsPersonByName(person.getLastName(), person.getFirstName())) {
             return personRepository.save(person);
         } else {
             logger.error("Person already exists");
-            throw new IllegalStateException("Person already exists");
+            throw new AlreadyExistsException("Person already exists");
         }
     }
 
@@ -118,12 +120,12 @@ public class PersonService implements IPersonService {
      * @return the updated person object, or null if no match
      */
     @Override
-    public Person updatePerson(String lastName, String firstName, Person person) {
+    public Person updatePerson(String lastName, String firstName, Person person) throws NotFoundException {
         if (existsPersonByName(lastName, firstName)) {
             return personRepository.update(lastName, firstName, person);
         } else {
             logger.error("Person not found");
-            throw new IllegalStateException("Person not found");
+            throw new NotFoundException("Person not found");
         }
     }
 }
