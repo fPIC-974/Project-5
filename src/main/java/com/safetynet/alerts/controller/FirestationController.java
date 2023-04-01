@@ -1,5 +1,6 @@
 package com.safetynet.alerts.controller;
 
+import com.safetynet.alerts.exception.AlertsException;
 import com.safetynet.alerts.model.Firestation;
 import com.safetynet.alerts.service.IFirestationService;
 import org.apache.logging.log4j.LogManager;
@@ -42,8 +43,12 @@ public class FirestationController {
     }
 
     @PostMapping
-    public Firestation saveFirestation(@RequestBody Firestation firestation) {
-        return firestationService.saveFirestation(firestation);
+    public Firestation saveFirestation(@RequestBody Firestation firestation) throws AlertsException {
+        try {
+            return firestationService.saveFirestation(firestation);
+        } catch (IllegalStateException ex)  {
+            throw (new AlertsException(ex.getMessage()));
+        }
     }
 
     @PutMapping("/{address}/{station}")
