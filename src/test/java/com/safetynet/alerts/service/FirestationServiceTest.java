@@ -63,7 +63,7 @@ class FirestationServiceTest {
     }
 
     @Test
-    public void deleteNonExistingFirestation() throws NotFoundException {
+    public void deleteNonExistingFirestation() {
         Firestation firestation = new Firestation();
         firestation.setAddress("test address");
         firestation.setStation(10);
@@ -99,7 +99,7 @@ class FirestationServiceTest {
     }
 
     @Test
-    public void updateNonExistingFirestation() throws NotFoundException {
+    public void updateNonExistingFirestation() {
         Firestation firestation = new Firestation();
         firestation.setAddress("test address");
         firestation.setStation(15);
@@ -113,7 +113,7 @@ class FirestationServiceTest {
     }
 
     @Test
-    public void saveExistingFirestation() throws AlreadyExistsException {
+    public void saveExistingFirestation() {
         Firestation firestation = new Firestation();
         firestation.setAddress("test address");
         firestation.setStation(15);

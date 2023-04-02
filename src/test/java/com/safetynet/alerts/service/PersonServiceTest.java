@@ -52,7 +52,7 @@ class PersonServiceTest {
     }
 
     @Test
-    public void deleteNonExistingPerson() throws NotFoundException {
+    public void deleteNonExistingPerson() {
         when(personRepository.existsByName(anyString(), anyString())).thenReturn(false);
 
         NotFoundException exception = assertThrows(NotFoundException.class,
@@ -62,7 +62,7 @@ class PersonServiceTest {
     }
 
     @Test
-    public void saveExistingPerson() throws AlreadyExistsException {
+    public void saveExistingPerson() {
         Person person;
         person = new Person();
         person.setLastName("Doe");
@@ -106,7 +106,7 @@ class PersonServiceTest {
     }
 
     @Test
-    public void updateNonExistingPerson() throws NotFoundException {
+    public void updateNonExistingPerson() {
         Person person;
         person = new Person();
         person.setLastName("Doe");

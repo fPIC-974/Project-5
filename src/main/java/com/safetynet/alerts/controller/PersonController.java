@@ -7,7 +7,9 @@ import com.safetynet.alerts.service.IPersonService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -48,5 +50,7 @@ public class PersonController {
     @DeleteMapping("/{lastName}/{firstName}")
     public void deletePerson(@PathVariable String lastName, @PathVariable String firstName) throws NotFoundException {
         personService.deletePersonByName(lastName, firstName);
+        // TODO Good way ?
+        throw new ResponseStatusException(HttpStatus.OK,"DELETED");
     }
 }

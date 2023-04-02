@@ -52,7 +52,7 @@ class MedicalrecordServiceTest {
     }
 
     @Test
-    public void deleteNonExistingMedicalrecord() throws NotFoundException{
+    public void deleteNonExistingMedicalrecord() {
         when(medicalrecordRepository.existsByName(anyString(), anyString())).thenReturn(false);
 
         NotFoundException exception = assertThrows(NotFoundException.class,
@@ -62,7 +62,7 @@ class MedicalrecordServiceTest {
     }
 
     @Test
-    public void saveExistingPerson() throws AlreadyExistsException {
+    public void saveExistingPerson() {
         Medicalrecord medicalrecord;
         medicalrecord = new Medicalrecord();
         medicalrecord.setLastName("Doe");
@@ -106,7 +106,7 @@ class MedicalrecordServiceTest {
     }
 
     @Test
-    public void updateNonExistingMedicalrecord() throws NotFoundException {
+    public void updateNonExistingMedicalrecord() {
         Medicalrecord medicalrecord;
         medicalrecord = new Medicalrecord();
         medicalrecord.setLastName("Doe");
