@@ -15,7 +15,7 @@ public interface IMedicalrecordService {
 
     void deleteMedicalrecordByName(String lastName, String firstName) throws NotFoundException;
 
-    Medicalrecord saveMedicalrecord(Medicalrecord medicalrecord) throws AlreadyExistsException;
+    Medicalrecord saveMedicalrecord(Medicalrecord medicalrecord) throws AlreadyExistsException, NotFoundException;
 
     Medicalrecord updateMedicalrecord(String lastName, String firstName, Medicalrecord medicalrecord) throws NotFoundException;
 

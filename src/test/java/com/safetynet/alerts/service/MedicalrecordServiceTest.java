@@ -4,6 +4,7 @@ import com.safetynet.alerts.exception.AlreadyExistsException;
 import com.safetynet.alerts.exception.NotFoundException;
 import com.safetynet.alerts.model.Medicalrecord;
 import com.safetynet.alerts.repository.MedicalrecordRepository;
+import com.safetynet.alerts.repository.PersonRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -23,6 +24,8 @@ class MedicalrecordServiceTest {
 
     @Mock
     private MedicalrecordRepository medicalrecordRepository;
+    @Mock
+    private PersonRepository personRepository;
 
     @InjectMocks
     private MedicalrecordService medicalrecordService;
@@ -62,12 +65,13 @@ class MedicalrecordServiceTest {
     }
 
     @Test
-    public void saveExistingPerson() {
+    public void saveExistingMedicalRecordWithExistingPerson() {
         Medicalrecord medicalrecord;
         medicalrecord = new Medicalrecord();
         medicalrecord.setLastName("Doe");
         medicalrecord.setFirstName("John");
 
+        when(personRepository.existsByName(medicalrecord.getLastName(), medicalrecord.getFirstName())).thenReturn(true);
         when(medicalrecordRepository.existsByName(anyString(), anyString())).thenReturn(true);
 
         AlreadyExistsException exception = assertThrows(AlreadyExistsException.class,
@@ -78,12 +82,29 @@ class MedicalrecordServiceTest {
     }
 
     @Test
-    public void saveNonExistingMedicalrecord() throws AlreadyExistsException{
+    public void saveExistingMedicalRecordWithoutExistingPerson() {
         Medicalrecord medicalrecord;
         medicalrecord = new Medicalrecord();
         medicalrecord.setLastName("Doe");
         medicalrecord.setFirstName("John");
 
+        when(personRepository.existsByName(medicalrecord.getLastName(), medicalrecord.getFirstName())).thenReturn(false);
+
+        NotFoundException exception = assertThrows(NotFoundException.class,
+                () -> medicalrecordService.saveMedicalrecord(medicalrecord));
+
+        assertEquals(
+                "Person not found", exception.getMessage());
+    }
+
+    @Test
+    public void saveNonExistingMedicalrecord() throws AlreadyExistsException, NotFoundException{
+        Medicalrecord medicalrecord;
+        medicalrecord = new Medicalrecord();
+        medicalrecord.setLastName("Doe");
+        medicalrecord.setFirstName("John");
+
+        when(personRepository.existsByName(medicalrecord.getLastName(), medicalrecord.getFirstName())).thenReturn(true);
         when(medicalrecordRepository.existsByName(anyString(), anyString())).thenReturn(false);
 
         medicalrecordService.saveMedicalrecord(medicalrecord);

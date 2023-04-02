@@ -3,6 +3,7 @@ package com.safetynet.alerts.service;
 import com.safetynet.alerts.exception.AlreadyExistsException;
 import com.safetynet.alerts.exception.NotFoundException;
 import com.safetynet.alerts.model.Person;
+import com.safetynet.alerts.repository.MedicalrecordRepository;
 import com.safetynet.alerts.repository.PersonRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,14 +16,16 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class PersonServiceTest {
 
     @Mock
     private PersonRepository personRepository;
+
+    @Mock
+    private MedicalrecordRepository medicalrecordRepository;
 
     @InjectMocks
     private PersonService personService;
@@ -42,13 +45,27 @@ class PersonServiceTest {
     }
 
     @Test
-    public void deleteExistingPerson() throws NotFoundException {
+    public void deleteExistingPersonWithMedicalrecord() throws NotFoundException {
 
         when(personRepository.existsByName(anyString(), anyString())).thenReturn(true);
+        when(medicalrecordRepository.existsByName(anyString(), anyString())).thenReturn(true);
 
         personService.deletePersonByName("Doe", "John");
 
         verify(personRepository).deleteByName(anyString(), anyString());
+        verify(medicalrecordRepository).deleteByName(anyString(), anyString());
+    }
+
+    @Test
+    public void deleteExistingPersonWithoutMedicalrecord() throws NotFoundException {
+
+        when(personRepository.existsByName(anyString(), anyString())).thenReturn(true);
+        when(medicalrecordRepository.existsByName(anyString(), anyString())).thenReturn(false);
+
+        personService.deletePersonByName("Doe", "John");
+
+        verify(personRepository).deleteByName(anyString(), anyString());
+        verify(medicalrecordRepository, times(0)).deleteByName(anyString(), anyString());
     }
 
     @Test

@@ -83,6 +83,7 @@ public class FirestationService implements IFirestationService {
      */
     @Override
     public void deleteFirestation(Firestation firestation) throws NotFoundException {
+        logger.debug("Method called : deleteFirestation(" + firestation + ")");
         if (existsFirestation(firestation.getAddress(), firestation.getStation())) {
             firestationRepository.delete(firestation);
         } else {
@@ -99,6 +100,7 @@ public class FirestationService implements IFirestationService {
      */
     @Override
     public void deleteFirestation(String address, int station)  throws NotFoundException {
+        logger.debug("Method called : deleteFirestation(" + address + ", " + station + ")");
         if (existsFirestation(address, station)) {
             firestationRepository.delete(address, station);
         } else {
@@ -116,6 +118,7 @@ public class FirestationService implements IFirestationService {
      */
     @Override
     public Firestation updateFirestation(String address, int station, Firestation firestation) throws NotFoundException {
+        logger.debug("Method called : updateFirestation(" + address + ", " + station + ", " + firestation + ")");
         if (existsFirestation(address, station)) {
             return firestationRepository.update(address, station, firestation);
         } else {
@@ -131,6 +134,7 @@ public class FirestationService implements IFirestationService {
      */
     @Override
     public Firestation saveFirestation(Firestation firestation) throws AlreadyExistsException {
+        logger.debug("Method called : saveFirestation(" + firestation + ")");
         if (!existsFirestation(firestation.getAddress(), firestation.getStation())) {
             return firestationRepository.save(firestation);
         } else {

@@ -34,7 +34,7 @@ public class MedicalrecordController {
     }
 
     @PostMapping
-    public Medicalrecord saveMedicalrecord(@RequestBody Medicalrecord medicalrecord) throws AlreadyExistsException {
+    public Medicalrecord saveMedicalrecord(@RequestBody Medicalrecord medicalrecord) throws AlreadyExistsException, NotFoundException {
         return medicalrecordService.saveMedicalrecord(medicalrecord);
     }
 

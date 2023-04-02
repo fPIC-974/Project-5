@@ -4,6 +4,7 @@ import com.safetynet.alerts.exception.AlreadyExistsException;
 import com.safetynet.alerts.exception.NotFoundException;
 import com.safetynet.alerts.model.Medicalrecord;
 import com.safetynet.alerts.repository.IMedicalrecordRepository;
+import com.safetynet.alerts.repository.IPersonRepository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,11 @@ import java.util.List;
 
 /**
  * Functional Medicalrecord object management
+ *
+ * Business rule : a medicalrecord should exist only if a matching person exists
+ * Two possibilities : ignore the medicalrecord creation request (throw exception)
+ * or create a user with matching lastname and firstname, and empty other fields
+ * The latter could create inconsistencies in app, so the former is chosen
  */
 @Service
 public class MedicalrecordService implements IMedicalrecordService {
@@ -21,9 +27,12 @@ public class MedicalrecordService implements IMedicalrecordService {
 
     private final IMedicalrecordRepository medicalrecordRepository;
 
+    private final IPersonRepository personRepository;
+
     @Autowired
-    public MedicalrecordService(IMedicalrecordRepository medicalrecordRepository) {
+    public MedicalrecordService(IMedicalrecordRepository medicalrecordRepository, IPersonRepository personRepository) {
         this.medicalrecordRepository = medicalrecordRepository;
+        this.personRepository = personRepository;
     }
 
     /**
@@ -65,6 +74,7 @@ public class MedicalrecordService implements IMedicalrecordService {
      */
     @Override
     public void deleteMedicalrecordByName(String lastName, String firstName) throws NotFoundException{
+        logger.debug("Method called : deleteMedicalrecordByName(" + lastName + ", " + firstName + ")");
         if (existsMedicalrecord(lastName, firstName)) {
             medicalrecordRepository.deleteByName(lastName, firstName);
         } else {
@@ -79,7 +89,16 @@ public class MedicalrecordService implements IMedicalrecordService {
      * @return the added Medicalrecord object, or null if already exists
      */
     @Override
-    public Medicalrecord saveMedicalrecord(Medicalrecord medicalrecord) throws AlreadyExistsException {
+    public Medicalrecord saveMedicalrecord(Medicalrecord medicalrecord) throws AlreadyExistsException, NotFoundException{
+        logger.debug("Method called : saveMedicalRecord(" + medicalrecord + ")");
+        // If the person does not exist, the medical record can not be created
+        if (!personRepository.existsByName(medicalrecord.getLastName(), medicalrecord.getFirstName())) {
+            logger.error("Person not found : "
+                    + medicalrecord.getFirstName() + ":"
+                    + medicalrecord.getLastName());
+            throw new NotFoundException("Person not found");
+        }
+
         if (!existsMedicalrecord(medicalrecord.getLastName(), medicalrecord.getFirstName())) {
             return medicalrecordRepository.save(medicalrecord);
         } else {
@@ -100,6 +119,7 @@ public class MedicalrecordService implements IMedicalrecordService {
      */
     @Override
     public Medicalrecord updateMedicalrecord(String lastName, String firstName, Medicalrecord medicalrecord) throws NotFoundException {
+        logger.debug("Method called : updateMedicalrecord(" + lastName + ", " + firstName + ", " + medicalrecord + ")");
         if (existsMedicalrecord(lastName, firstName)) {
             return medicalrecordRepository.update(lastName, firstName, medicalrecord);
         } else {
