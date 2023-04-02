@@ -2,20 +2,16 @@ package com.safetynet.alerts.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.safetynet.alerts.model.Firestation;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.util.UriUtils;
 
-import java.net.URI;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatCode;
 import static org.hamcrest.CoreMatchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -23,6 +19,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@DirtiesContext
 class FirestationControllerIT {
 
     @Autowired
@@ -38,13 +35,14 @@ class FirestationControllerIT {
     @Test
     public void shouldGetFirestationsByAddress() throws Exception {
 
-        String path = UriUtils.encodePath("/firestation/addr/1509 Culver St", "UTF-8");
+        String path = UriUtils.encodePath("/firestation/addr/112 Steppes Pl", "UTF-8");
         String decodedPath = UriUtils.decode(path, "UTF-8");
 
         mockMvc.perform(get(decodedPath))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].address", is("1509 Culver St")))
-                .andExpect(jsonPath("$[0].station", is(3)));
+                .andExpect(jsonPath("$.length()", is(2)))
+                .andExpect(jsonPath("$[0]['address']", is("112 Steppes Pl")))
+                .andExpect(jsonPath("$[0]['station']", is(3)));
     }
 
     @Test
@@ -105,14 +103,10 @@ class FirestationControllerIT {
                 .andExpect(jsonPath("$.station", is(4)));
     }
 
-    // TODO - shouldDeleteFirestation() test
     @Test
-    @Disabled
-    public void shouldDeleteFirestation() throws Exception {
-        String path = UriUtils.encodePath("/firestation/1509 Culver St/3", "UTF-8");
-        String decodedPath = UriUtils.decode(path, "UTF-8");
-
-        mockMvc.perform(delete(decodedPath))
-                .andExpect(status().isOk());
+    public void shouldDeleteFirestation() {
+        assertThatCode(() -> mockMvc.perform(delete("/firestation/1509 Culver St/3"))
+                .andExpect(status().isOk()))
+                .doesNotThrowAnyException();
     }
 }

@@ -1,9 +1,9 @@
 package com.safetynet.alerts.service;
 
+import com.safetynet.alerts.exception.AlreadyExistsException;
+import com.safetynet.alerts.exception.NotFoundException;
 import com.safetynet.alerts.model.Medicalrecord;
-import com.safetynet.alerts.model.Person;
 import com.safetynet.alerts.repository.MedicalrecordRepository;
-import com.safetynet.alerts.repository.PersonRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -42,7 +42,7 @@ class MedicalrecordServiceTest {
     }
 
     @Test
-    public void deleteExistingMedicalrecord() {
+    public void deleteExistingMedicalrecord() throws NotFoundException {
 
         when(medicalrecordRepository.existsByName(anyString(), anyString())).thenReturn(true);
 
@@ -55,7 +55,7 @@ class MedicalrecordServiceTest {
     public void deleteNonExistingMedicalrecord() {
         when(medicalrecordRepository.existsByName(anyString(), anyString())).thenReturn(false);
 
-        IllegalStateException exception = assertThrows(IllegalStateException.class,
+        NotFoundException exception = assertThrows(NotFoundException.class,
                 () -> medicalrecordService.deleteMedicalrecordByName(anyString(), anyString()));
 
         assertEquals("Medicalrecord not found", exception.getMessage());
@@ -70,7 +70,7 @@ class MedicalrecordServiceTest {
 
         when(medicalrecordRepository.existsByName(anyString(), anyString())).thenReturn(true);
 
-        IllegalStateException exception = assertThrows(IllegalStateException.class,
+        AlreadyExistsException exception = assertThrows(AlreadyExistsException.class,
                 () -> medicalrecordService.saveMedicalrecord(medicalrecord));
 
         assertEquals(
@@ -78,7 +78,7 @@ class MedicalrecordServiceTest {
     }
 
     @Test
-    public void saveNonExistingMedicalrecord() {
+    public void saveNonExistingMedicalrecord() throws AlreadyExistsException{
         Medicalrecord medicalrecord;
         medicalrecord = new Medicalrecord();
         medicalrecord.setLastName("Doe");
@@ -92,7 +92,7 @@ class MedicalrecordServiceTest {
     }
 
     @Test
-    public void updateExistingMedicalrecord() {
+    public void updateExistingMedicalrecord() throws NotFoundException {
         Medicalrecord medicalrecord;
         medicalrecord = new Medicalrecord();
         medicalrecord.setLastName("Doe");
@@ -114,7 +114,7 @@ class MedicalrecordServiceTest {
 
         when(medicalrecordRepository.existsByName(anyString(), anyString())).thenReturn(false);
 
-        IllegalStateException exception = assertThrows(IllegalStateException.class,
+        NotFoundException exception = assertThrows(NotFoundException.class,
                 () -> medicalrecordService.updateMedicalrecord("Doe", "John", medicalrecord));
 
         assertEquals(

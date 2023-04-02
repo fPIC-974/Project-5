@@ -1,5 +1,7 @@
 package com.safetynet.alerts.service;
 
+import com.safetynet.alerts.exception.AlreadyExistsException;
+import com.safetynet.alerts.exception.NotFoundException;
 import com.safetynet.alerts.model.Person;
 import com.safetynet.alerts.repository.PersonRepository;
 import org.junit.jupiter.api.Test;
@@ -40,7 +42,7 @@ class PersonServiceTest {
     }
 
     @Test
-    public void deleteExistingPerson() {
+    public void deleteExistingPerson() throws NotFoundException {
 
         when(personRepository.existsByName(anyString(), anyString())).thenReturn(true);
 
@@ -53,7 +55,7 @@ class PersonServiceTest {
     public void deleteNonExistingPerson() {
         when(personRepository.existsByName(anyString(), anyString())).thenReturn(false);
 
-        IllegalStateException exception = assertThrows(IllegalStateException.class,
+        NotFoundException exception = assertThrows(NotFoundException.class,
                 () -> personService.deletePersonByName(anyString(), anyString()));
 
         assertEquals("Person not found", exception.getMessage());
@@ -68,7 +70,7 @@ class PersonServiceTest {
 
         when(personRepository.existsByName(anyString(), anyString())).thenReturn(true);
 
-        IllegalStateException exception = assertThrows(IllegalStateException.class,
+        AlreadyExistsException exception = assertThrows(AlreadyExistsException.class,
                 () -> personService.savePerson(person));
 
         assertEquals(
@@ -76,7 +78,7 @@ class PersonServiceTest {
     }
 
     @Test
-    public void saveNonExistingPerson() {
+    public void saveNonExistingPerson() throws AlreadyExistsException{
         Person person;
         person = new Person();
         person.setLastName("Doe");
@@ -90,7 +92,7 @@ class PersonServiceTest {
     }
 
     @Test
-    public void updateExistingPerson() {
+    public void updateExistingPerson() throws NotFoundException{
         Person person;
         person = new Person();
         person.setLastName("Doe");
@@ -112,7 +114,7 @@ class PersonServiceTest {
 
         when(personRepository.existsByName(anyString(), anyString())).thenReturn(false);
 
-        IllegalStateException exception = assertThrows(IllegalStateException.class,
+        NotFoundException exception = assertThrows(NotFoundException.class,
                 () -> personService.updatePerson("Doe", "John", person));
 
         assertEquals(

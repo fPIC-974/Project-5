@@ -1,9 +1,9 @@
 package com.safetynet.alerts.controller;
 
+import com.safetynet.alerts.exception.AlreadyExistsException;
+import com.safetynet.alerts.exception.NotFoundException;
 import com.safetynet.alerts.model.Medicalrecord;
-import com.safetynet.alerts.model.Person;
-import com.safetynet.alerts.service.MedicalrecordService;
-import com.safetynet.alerts.service.PersonService;
+import com.safetynet.alerts.service.IMedicalrecordService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,12 +14,12 @@ import java.util.List;
 @RestController
 @RequestMapping("/medicalrecord")
 public class MedicalrecordController {
-    private static final Logger logger = LogManager.getLogger("Medicalrecord Controller");
+    private static final Logger logger = LogManager.getLogger(MedicalrecordController.class);
 
-    private final MedicalrecordService medicalrecordService;
+    private final IMedicalrecordService medicalrecordService;
 
     @Autowired
-    public MedicalrecordController(MedicalrecordService medicalrecordService) {
+    public MedicalrecordController(IMedicalrecordService medicalrecordService) {
         this.medicalrecordService = medicalrecordService;
     }
 
@@ -34,20 +34,20 @@ public class MedicalrecordController {
     }
 
     @PostMapping
-    public Medicalrecord saveMedicalrecord(@RequestBody Medicalrecord medicalrecord) {
+    public Medicalrecord saveMedicalrecord(@RequestBody Medicalrecord medicalrecord) throws AlreadyExistsException {
         return medicalrecordService.saveMedicalrecord(medicalrecord);
     }
 
     @PutMapping("/{lastName}/{firstName}")
     public Medicalrecord updateMedicalrecord(@PathVariable String lastName,
                                              @PathVariable String firstName,
-                                             @RequestBody Medicalrecord medicalrecord) {
+                                             @RequestBody Medicalrecord medicalrecord) throws NotFoundException {
         return medicalrecordService.updateMedicalrecord(lastName, firstName, medicalrecord);
     }
 
     @DeleteMapping("/{lastName}/{firstName}")
     public void deleteMedicalRecord(@PathVariable String lastName,
-                                             @PathVariable String firstName) {
+                                             @PathVariable String firstName) throws NotFoundException {
         medicalrecordService.deleteMedicalrecordByName(lastName, firstName);
     }
 }
