@@ -123,6 +123,9 @@ public class AlertService implements IAlertService {
                 .map(p -> personDetails(p, false, true, true, false, true)).toList();
 
         Map<String, Object> mapOfPersons = new HashMap<>();
+        if (firestationsID.isEmpty()) {
+            mapOfPersons.put("address", "");
+        }
         mapOfPersons.put("address", address);
         mapOfPersons.put("stationNumber", firestationsID);
         mapOfPersons.put("persons", persons);
@@ -191,6 +194,10 @@ public class AlertService implements IAlertService {
                                     boolean age,
                                     boolean email,
                                     boolean medicalinfo) {
+
+        if (person == null) {
+            return null;
+        }
 
         ObjectMapper objectMapper = new ObjectMapper();
         ObjectNode personInfo = objectMapper.createObjectNode();
