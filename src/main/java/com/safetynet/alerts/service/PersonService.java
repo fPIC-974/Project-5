@@ -8,6 +8,7 @@ import com.safetynet.alerts.repository.IPersonRepository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,7 +16,6 @@ import java.util.stream.Collectors;
 
 /**
  * Functional Person object management
- *
  * Business rule : a medicalrecord should exist only if a matching person exists
  * A delete request should therefore imply the deletion of the corresponding medicalrecord
  */
@@ -25,12 +25,12 @@ public class PersonService implements IPersonService {
 
     private final IPersonRepository personRepository;
 
-    private final IMedicalrecordRepository medicalrecordRepository;
+    private final IMedicalrecordService medicalrecordService;
 
     @Autowired
-    public PersonService(IPersonRepository personRepository, IMedicalrecordRepository medicalrecordRepository) {
+    public PersonService(IPersonRepository personRepository, @Lazy IMedicalrecordService medicalrecordService) {
         this.personRepository = personRepository;
-        this.medicalrecordRepository = medicalrecordRepository;
+        this.medicalrecordService = medicalrecordService;
     }
 
     /**
@@ -98,8 +98,8 @@ public class PersonService implements IPersonService {
         logger.debug("Method called : deletePersonByName(" + lastName + ", " + firstName + ")");
         if (existsPersonByName(lastName, firstName)) {
             personRepository.deleteByName(lastName, firstName);
-            if (medicalrecordRepository.existsByName(lastName, firstName)) {
-                medicalrecordRepository.deleteByName(lastName, firstName);
+            if (medicalrecordService.existsMedicalrecord(lastName, firstName)) {
+                medicalrecordService.deleteMedicalrecordByName(lastName, firstName);
             }
         } else {
             logger.error("Person not found : "

@@ -44,6 +44,7 @@ public class AlertService implements IAlertService {
 
     @Override
     public Map<String, Object> firestation(int station) {
+        // AtomInteger used to allow variable modification in stream
         AtomicInteger majors = new AtomicInteger();
         AtomicInteger minors = new AtomicInteger();
 

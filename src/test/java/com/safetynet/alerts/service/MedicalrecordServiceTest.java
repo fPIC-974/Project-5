@@ -25,7 +25,7 @@ class MedicalrecordServiceTest {
     @Mock
     private MedicalrecordRepository medicalrecordRepository;
     @Mock
-    private PersonRepository personRepository;
+    private PersonService personService;
 
     @InjectMocks
     private MedicalrecordService medicalrecordService;
@@ -71,7 +71,7 @@ class MedicalrecordServiceTest {
         medicalrecord.setLastName("Doe");
         medicalrecord.setFirstName("John");
 
-        when(personRepository.existsByName(medicalrecord.getLastName(), medicalrecord.getFirstName())).thenReturn(true);
+        when(personService.existsPersonByName(medicalrecord.getLastName(), medicalrecord.getFirstName())).thenReturn(true);
         when(medicalrecordRepository.existsByName(anyString(), anyString())).thenReturn(true);
 
         AlreadyExistsException exception = assertThrows(AlreadyExistsException.class,
@@ -88,7 +88,7 @@ class MedicalrecordServiceTest {
         medicalrecord.setLastName("Doe");
         medicalrecord.setFirstName("John");
 
-        when(personRepository.existsByName(medicalrecord.getLastName(), medicalrecord.getFirstName())).thenReturn(false);
+        when(personService.existsPersonByName(medicalrecord.getLastName(), medicalrecord.getFirstName())).thenReturn(false);
 
         NotFoundException exception = assertThrows(NotFoundException.class,
                 () -> medicalrecordService.saveMedicalrecord(medicalrecord));
@@ -104,7 +104,7 @@ class MedicalrecordServiceTest {
         medicalrecord.setLastName("Doe");
         medicalrecord.setFirstName("John");
 
-        when(personRepository.existsByName(medicalrecord.getLastName(), medicalrecord.getFirstName())).thenReturn(true);
+        when(personService.existsPersonByName(medicalrecord.getLastName(), medicalrecord.getFirstName())).thenReturn(true);
         when(medicalrecordRepository.existsByName(anyString(), anyString())).thenReturn(false);
 
         medicalrecordService.saveMedicalrecord(medicalrecord);

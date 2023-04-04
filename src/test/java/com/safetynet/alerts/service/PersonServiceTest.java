@@ -25,7 +25,7 @@ class PersonServiceTest {
     private PersonRepository personRepository;
 
     @Mock
-    private MedicalrecordRepository medicalrecordRepository;
+    private MedicalrecordService medicalrecordService;
 
     @InjectMocks
     private PersonService personService;
@@ -48,24 +48,24 @@ class PersonServiceTest {
     public void deleteExistingPersonWithMedicalrecord() throws NotFoundException {
 
         when(personRepository.existsByName(anyString(), anyString())).thenReturn(true);
-        when(medicalrecordRepository.existsByName(anyString(), anyString())).thenReturn(true);
+        when(medicalrecordService.existsMedicalrecord(anyString(), anyString())).thenReturn(true);
 
         personService.deletePersonByName("Doe", "John");
 
         verify(personRepository).deleteByName(anyString(), anyString());
-        verify(medicalrecordRepository).deleteByName(anyString(), anyString());
+        verify(medicalrecordService).deleteMedicalrecordByName(anyString(), anyString());
     }
 
     @Test
     public void deleteExistingPersonWithoutMedicalrecord() throws NotFoundException {
 
         when(personRepository.existsByName(anyString(), anyString())).thenReturn(true);
-        when(medicalrecordRepository.existsByName(anyString(), anyString())).thenReturn(false);
+        when(medicalrecordService.existsMedicalrecord(anyString(), anyString())).thenReturn(false);
 
         personService.deletePersonByName("Doe", "John");
 
         verify(personRepository).deleteByName(anyString(), anyString());
-        verify(medicalrecordRepository, times(0)).deleteByName(anyString(), anyString());
+        verify(medicalrecordService, times(0)).deleteMedicalrecordByName(anyString(), anyString());
     }
 
     @Test

@@ -8,6 +8,7 @@ import com.safetynet.alerts.repository.IPersonRepository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -27,12 +28,12 @@ public class MedicalrecordService implements IMedicalrecordService {
 
     private final IMedicalrecordRepository medicalrecordRepository;
 
-    private final IPersonRepository personRepository;
+    private final IPersonService personService;
 
     @Autowired
-    public MedicalrecordService(IMedicalrecordRepository medicalrecordRepository, IPersonRepository personRepository) {
+    public MedicalrecordService(IMedicalrecordRepository medicalrecordRepository, @Lazy IPersonService personService) {
         this.medicalrecordRepository = medicalrecordRepository;
-        this.personRepository = personRepository;
+        this.personService = personService;
     }
 
     /**
@@ -92,7 +93,7 @@ public class MedicalrecordService implements IMedicalrecordService {
     public Medicalrecord saveMedicalrecord(Medicalrecord medicalrecord) throws AlreadyExistsException, NotFoundException{
         logger.debug("Method called : saveMedicalRecord(" + medicalrecord + ")");
         // If the person does not exist, the medical record can not be created
-        if (!personRepository.existsByName(medicalrecord.getLastName(), medicalrecord.getFirstName())) {
+        if (!personService.existsPersonByName(medicalrecord.getLastName(), medicalrecord.getFirstName())) {
             logger.error("Person not found : "
                     + medicalrecord.getFirstName() + ":"
                     + medicalrecord.getLastName());
