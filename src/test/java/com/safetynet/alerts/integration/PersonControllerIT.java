@@ -1,4 +1,4 @@
-package com.safetynet.alerts.controller;
+package com.safetynet.alerts.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.safetynet.alerts.model.Person;
@@ -84,7 +84,7 @@ class PersonControllerIT {
     }
 
     @Test
-    public void shouldDeletePerson() {
+    public void shouldDeletePersonWithMedicalRecord() {
         assertThatCode(() -> mockMvc.perform(delete("/person/Boyd/John"))
                 .andExpect(status().isOk()))
                 .doesNotThrowAnyException();

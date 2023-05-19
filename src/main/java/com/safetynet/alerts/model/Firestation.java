@@ -1,6 +1,7 @@
 package com.safetynet.alerts.model;
 
 public class Firestation {
+
     String address;
     int station;
 

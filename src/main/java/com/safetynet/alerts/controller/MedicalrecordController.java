@@ -1,12 +1,15 @@
 package com.safetynet.alerts.controller;
 
-import com.safetynet.alerts.exception.AlreadyExistsException;
-import com.safetynet.alerts.exception.NotFoundException;
+import com.github.cliftonlabs.json_simple.JsonObject;
 import com.safetynet.alerts.model.Medicalrecord;
+import com.safetynet.alerts.service.ICrossService;
 import com.safetynet.alerts.service.IMedicalrecordService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,37 +20,80 @@ public class MedicalrecordController {
     private static final Logger logger = LogManager.getLogger(MedicalrecordController.class);
 
     private final IMedicalrecordService medicalrecordService;
+    private final ICrossService crossService;
 
     @Autowired
-    public MedicalrecordController(IMedicalrecordService medicalrecordService) {
+    public MedicalrecordController(ICrossService crossService, IMedicalrecordService medicalrecordService) {
         this.medicalrecordService = medicalrecordService;
+        this.crossService = crossService;
     }
 
     @GetMapping("/all")
-    public List<Medicalrecord> getMedicalrecords() {
-        return medicalrecordService.getMedicalrecords();
+    public ResponseEntity<Object> getMedicalrecords() {
+        logger.info("GET REQUEST : /medicalrecord/all");
+        List<Medicalrecord> result = medicalrecordService.getMedicalrecords();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Type", "application/json");
+
+        if (result.isEmpty()) {
+            JsonObject emptyJson = new JsonObject();
+
+            logger.info("RESPONSE : " + emptyJson);
+            return new ResponseEntity<>(emptyJson, headers, HttpStatus.OK);
+        }
+
+
+        logger.info("RESPONSE : " + result);
+        return new ResponseEntity<>(result, headers, HttpStatus.OK);
     }
 
     @GetMapping("/{lastName}/{firstName}")
-    public Medicalrecord getMedicalrecord(@PathVariable String lastName, @PathVariable String firstName) {
-        return medicalrecordService.getMedicalrecord(lastName, firstName);
+    public ResponseEntity<Object> getMedicalrecord(@PathVariable String lastName, @PathVariable String firstName) {
+        logger.info("GET REQUEST : /medicalrecord/" + lastName + "/" + firstName);
+        Medicalrecord result = medicalrecordService.getMedicalrecord(lastName,firstName);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Type", "application/json");
+
+        if (result == null) {
+            JsonObject emptyJson = new JsonObject();
+
+            logger.info("RESPONSE : " + emptyJson);
+            return new ResponseEntity<>(emptyJson, headers, HttpStatus.OK);
+        }
+
+        logger.info("RESPONSE : " + result);
+        return new ResponseEntity<>(result,headers, HttpStatus.OK);
     }
 
     @PostMapping
-    public Medicalrecord saveMedicalrecord(@RequestBody Medicalrecord medicalrecord) throws AlreadyExistsException {
-        return medicalrecordService.saveMedicalrecord(medicalrecord);
+    public Medicalrecord saveMedicalrecord(@RequestBody Medicalrecord medicalrecord) {
+        logger.info("POST REQUEST : /medicalrecord + Body = " + medicalrecord);
+
+        Medicalrecord result = crossService.saveMedicalrecord(medicalrecord);
+
+        logger.info("RESPONSE : " + result);
+        return result;
     }
 
     @PutMapping("/{lastName}/{firstName}")
     public Medicalrecord updateMedicalrecord(@PathVariable String lastName,
                                              @PathVariable String firstName,
-                                             @RequestBody Medicalrecord medicalrecord) throws NotFoundException {
-        return medicalrecordService.updateMedicalrecord(lastName, firstName, medicalrecord);
+                                             @RequestBody Medicalrecord medicalrecord) {
+        logger.info("PUT REQUEST : /medicalrecord/" + lastName + "/" + firstName + " + Body = " + medicalrecord);
+
+        Medicalrecord result = medicalrecordService.updateMedicalrecord(lastName, firstName, medicalrecord);
+
+        logger.info("RESPONSE : " + result);
+        return result;
     }
 
     @DeleteMapping("/{lastName}/{firstName}")
     public void deleteMedicalRecord(@PathVariable String lastName,
-                                             @PathVariable String firstName) throws NotFoundException {
+                                             @PathVariable String firstName) {
+        logger.info("DELETE REQUEST : /medicalrecord/" + lastName + "/" + firstName);
+
         medicalrecordService.deleteMedicalrecordByName(lastName, firstName);
     }
 }

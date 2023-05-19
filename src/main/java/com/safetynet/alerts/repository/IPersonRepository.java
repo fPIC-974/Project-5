@@ -1,7 +1,5 @@
 package com.safetynet.alerts.repository;
 
-import com.safetynet.alerts.exception.AlreadyExistsException;
-import com.safetynet.alerts.exception.NotFoundException;
 import com.safetynet.alerts.model.Person;
 
 import java.util.Optional;
@@ -12,13 +10,11 @@ public interface IPersonRepository {
 
     Optional<Person> findByName(String lastName, String firstName);
 
-    boolean existsByName(String lastName, String firstName);
+    boolean delete(Person person);
 
-    void delete(Person person) throws NotFoundException;
+    boolean delete(String lastName, String firstName);
 
-    void deleteByName(String lastName, String firstName) throws NotFoundException;
+    Person update(String lastName, String firstName, Person person);
 
-    Person update(String lastName, String firstName, Person person) throws NotFoundException;
-
-    Person save(Person person) throws AlreadyExistsException;
+    Person save(Person person);
 }

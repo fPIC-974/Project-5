@@ -4,6 +4,8 @@ package com.safetynet.alerts.repository;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.safetynet.alerts.config.CustomProperties;
+import com.safetynet.alerts.exception.InvalidObjectParameterException;
 import com.safetynet.alerts.exception.NotFoundException;
 import com.safetynet.alerts.model.Firestation;
 import org.apache.logging.log4j.LogManager;
@@ -21,7 +23,7 @@ import java.util.stream.Collectors;
  * Repository of firestations
  */
 @Repository
-public class FirestationRepository implements IFirestationRepository {
+public class FirestationRepository implements IFirestationRepository, IUsable<Firestation> {
     private static final Logger logger = LogManager.getLogger(FirestationRepository.class);
 
     private List<Firestation> firestationRepository;
@@ -30,6 +32,7 @@ public class FirestationRepository implements IFirestationRepository {
 
     /**
      * Constructor
+     *
      * @param properties reference to external properties file
      */
     public FirestationRepository(CustomProperties properties) {
@@ -52,15 +55,18 @@ public class FirestationRepository implements IFirestationRepository {
 
     /**
      * Returns an iterable of Firestation objects
+     *
      * @return the iterable of firestations
      */
     @Override
     public Iterable<Firestation> findAll() {
+        logger.debug("Method called : findAll()");
         return firestationRepository;
     }
 
     /**
      * Returns a list of elements matching the address provided
+     *
      * @param address the value of the field to be matched
      * @return a list of elements matching the parameter
      */
@@ -73,6 +79,7 @@ public class FirestationRepository implements IFirestationRepository {
 
     /**
      * Returns a list of elements matching the station provided
+     *
      * @param station the value of the field to be matched
      * @return a list of elements matching the parameter
      */
@@ -98,24 +105,12 @@ public class FirestationRepository implements IFirestationRepository {
     }
 
     /**
-     * Returns whether a firestation with both the given address and station exists
-     * @param address the value of the address field to be matched
-     * @param station the value of the station field to be matched
-     * @return true if the object is found, false otherwise
-     */
-    @Override
-    public boolean exists(String address, int station) {
-        return findByAddress(address).stream()
-                .anyMatch(firestation -> firestation.getStation() == station && firestation.getAddress().equals(address));
-    }
-
-    /**
      * Deletes a given firestation
+     *
      * @param firestation the object to be deleted
      */
     @Override
-    public void delete(Firestation firestation) throws NotFoundException {
-        // TODO - Return bool
+    public boolean delete(Firestation firestation) {
         logger.debug("Method called : delete(" + firestation + ")");
 
         if (!firestationRepository.remove(firestation)) {
@@ -124,59 +119,69 @@ public class FirestationRepository implements IFirestationRepository {
         }
 
         logger.info("Deleted : " + firestation);
+        return true;
     }
 
     /**
      * Deletes a firestation matching address and station fields
      * Overrides and call delete(Firestation) with the object found
+     *
      * @param address the value of the address field to be matched
      * @param station the value of the station field to be matched
      */
     @Override
-    public void delete(String address, int station) throws NotFoundException {
-        // TODO - Return bool
+    public void delete(String address, int station) {
         logger.debug("Method called : delete("
                 + address + ", " + station + ")");
 
-        if (exists(address, station)) {
-            delete(find(address, station).orElse(null));
-        } else {
+        Optional<Firestation> firestation = find(address, station);
+
+        if (firestation.isEmpty()) {
             logger.error("Firestation not found :" +
                     " { address: " + address + ", station: " + station + " }");
             throw new NotFoundException("Firestation not found");
         }
+
+        delete(firestation.get());
     }
 
     /**
      * Updates the firestation matching the address and field parameters
-     * @param address the value of the address field to be matched
-     * @param station the value of the station field to be matched
+     *
+     * @param address     the value of the address field to be matched
+     * @param station     the value of the station field to be matched
      * @param firestation the new firestation object
      * @return the new firestation object, or null if no match
      */
     @Override
-    public Firestation update(String address, int station, Firestation firestation) throws NotFoundException {
+    public Firestation update(String address, int station, Firestation firestation) {
         logger.debug("Method called : update("
                 + address + ", " + station + ", " + firestation + ")");
 
+        if (isNotValid(firestation)) {
+            logger.error("Invalid parameter : " + firestation);
+            throw new InvalidObjectParameterException("Invalid parameter");
+        }
+
         Firestation toUpdate = find(address, station).orElse(null);
 
-        if (toUpdate != null) {
-            toUpdate.setAddress(firestation.getAddress());
-            toUpdate.setStation(firestation.getStation());
-            logger.info("Firestation updated :" +
-                    " {address=" + address + ":station=" + station + "} -> " + toUpdate);
-        } else {
+        if (toUpdate == null) {
             logger.error("Firestation not found :" +
                     " { address: " + address + ", station: " + station + " }");
             throw new NotFoundException("Firestation not found");
         }
+
+        toUpdate.setAddress(firestation.getAddress());
+        toUpdate.setStation(firestation.getStation());
+        logger.info("Firestation updated :" +
+                " {address=" + address + ":station=" + station + "} -> " + toUpdate);
 
         return toUpdate;
     }
 
     /**
      * Saves a new firestation
+     *
      * @param firestation the new firestation to be added
      * @return the firestation added, or null if already exists
      */
@@ -184,13 +189,25 @@ public class FirestationRepository implements IFirestationRepository {
     public Firestation save(Firestation firestation) {
         logger.debug("Method called : save(" + firestation + ")");
 
-        if (!exists(firestation.getAddress(), firestation.getStation())) {
-            firestationRepository.add(firestation);
-            logger.info("Added : " + firestation);
-            return firestation;
-        } else {
+        if (isNotValid(firestation)) {
+            logger.error("Invalid parameter : " + firestation);
+            throw new InvalidObjectParameterException("Invalid parameter");
+        }
+
+        if (find(firestation.getAddress(), firestation.getStation()).isPresent()) {
             logger.error("Already exists : " + firestation);
             throw new IllegalStateException("Firestation already exists");
         }
+
+        firestationRepository.add(firestation);
+        logger.info("Added : " + firestation);
+        return firestation;
+    }
+
+    @Override
+    public boolean isNotValid(Firestation firestation) {
+        // No address field ? Empty address field ? station field < 0 ?
+        return firestation.getAddress().isBlank() ||
+                firestation.getStation() < 0;
     }
 }

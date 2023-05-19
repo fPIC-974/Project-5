@@ -1,7 +1,5 @@
 package com.safetynet.alerts.repository;
 
-import com.safetynet.alerts.exception.AlreadyExistsException;
-import com.safetynet.alerts.exception.NotFoundException;
 import com.safetynet.alerts.model.Medicalrecord;
 
 import java.util.Optional;
@@ -11,17 +9,11 @@ public interface IMedicalrecordRepository {
 
     Optional<Medicalrecord> findByName(String lastName, String firstName);
 
-    Optional<Medicalrecord> find(Medicalrecord medicalrecord);
+    boolean delete(Medicalrecord medicalrecord);
 
-    boolean exists(Medicalrecord medicalrecord);
+    boolean delete(String lastName, String firstName);
 
-    boolean existsByName(String lastName, String firstName);
+    Medicalrecord update(String lastName, String firstName, Medicalrecord medicalrecord);
 
-    void delete(Medicalrecord medicalrecord) throws NotFoundException;
-
-    void deleteByName(String lastName, String firstName) throws NotFoundException;
-
-    Medicalrecord update(String lastName, String firstName, Medicalrecord medicalrecord) throws NotFoundException;
-
-    Medicalrecord save(Medicalrecord medicalrecord) throws AlreadyExistsException;
+    Medicalrecord save(Medicalrecord medicalrecord);
 }

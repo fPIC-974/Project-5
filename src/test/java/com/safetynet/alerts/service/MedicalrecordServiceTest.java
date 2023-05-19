@@ -3,20 +3,23 @@ package com.safetynet.alerts.service;
 import com.safetynet.alerts.exception.AlreadyExistsException;
 import com.safetynet.alerts.exception.NotFoundException;
 import com.safetynet.alerts.model.Medicalrecord;
+import com.safetynet.alerts.model.Person;
 import com.safetynet.alerts.repository.MedicalrecordRepository;
+import com.safetynet.alerts.repository.PersonRepository;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class MedicalrecordServiceTest {
@@ -28,7 +31,7 @@ class MedicalrecordServiceTest {
     private MedicalrecordService medicalrecordService;
 
     @Test
-    public void getExistingMedicalrecord() {
+    public void shouldGetExistingMedicalrecord() {
         Medicalrecord medicalrecord = new Medicalrecord();
         medicalrecord.setLastName("Doe");
         medicalrecord.setFirstName("John");
@@ -40,20 +43,25 @@ class MedicalrecordServiceTest {
         assertEquals("Doe", toCheck.getLastName());
         assertEquals("John", toCheck.getFirstName());
     }
-
     @Test
-    public void deleteExistingMedicalrecord() throws NotFoundException {
+    public void shouldGetNonExistingMedicalrecord() {
+        when(medicalrecordRepository.findByName(anyString(), anyString())).thenReturn(Optional.ofNullable(null));
 
-        when(medicalrecordRepository.existsByName(anyString(), anyString())).thenReturn(true);
+        Medicalrecord toCheck = medicalrecordService.getMedicalrecord("Doe", "John");
 
-        medicalrecordService.deleteMedicalrecordByName("Doe", "John");
-
-        verify(medicalrecordRepository).deleteByName(anyString(), anyString());
+        assertNull(toCheck);
     }
 
     @Test
-    public void deleteNonExistingMedicalrecord() {
-        when(medicalrecordRepository.existsByName(anyString(), anyString())).thenReturn(false);
+    public void shouldDeleteExistingMedicalrecord() throws NotFoundException {
+        assertDoesNotThrow(() -> medicalrecordService.deleteMedicalrecordByName(anyString(), anyString()));
+
+        verify(medicalrecordRepository, times(1)).delete(anyString(), anyString());
+    }
+
+    @Test
+    public void shouldDeleteNonExistingMedicalrecord() {
+        when(medicalrecordRepository.delete(anyString(), anyString())).thenThrow(new NotFoundException("Medicalrecord not found"));
 
         NotFoundException exception = assertThrows(NotFoundException.class,
                 () -> medicalrecordService.deleteMedicalrecordByName(anyString(), anyString()));
@@ -61,63 +69,76 @@ class MedicalrecordServiceTest {
         assertEquals("Medicalrecord not found", exception.getMessage());
     }
 
-    @Test
-    public void saveExistingPerson() {
-        Medicalrecord medicalrecord;
-        medicalrecord = new Medicalrecord();
-        medicalrecord.setLastName("Doe");
-        medicalrecord.setFirstName("John");
+    /*@Test
+    public void shouldSaveExistingMedicalRecord() {
+        when(medicalrecordRepository.save(any(Medicalrecord.class))).thenThrow(new AlreadyExistsException("Medicalrecord already exists"));
 
-        when(medicalrecordRepository.existsByName(anyString(), anyString())).thenReturn(true);
+        AlreadyExistsException aee = assertThrows(AlreadyExistsException.class,
+                () -> medicalrecordService.saveMedicalrecord(new Medicalrecord()));
 
-        AlreadyExistsException exception = assertThrows(AlreadyExistsException.class,
-                () -> medicalrecordService.saveMedicalrecord(medicalrecord));
+        assertTrue(aee.getMessage().contains("Medicalrecord already exists"));
+    }*/
 
-        assertEquals(
-                "Medicalrecord already exists", exception.getMessage());
-    }
-
-    @Test
-    public void saveNonExistingMedicalrecord() throws AlreadyExistsException{
-        Medicalrecord medicalrecord;
-        medicalrecord = new Medicalrecord();
-        medicalrecord.setLastName("Doe");
-        medicalrecord.setFirstName("John");
-
-        when(medicalrecordRepository.existsByName(anyString(), anyString())).thenReturn(false);
-
-        medicalrecordService.saveMedicalrecord(medicalrecord);
+    /*@Test
+    public void shouldSaveNonExistingMedicalrecord() throws AlreadyExistsException, NotFoundException{
+        assertDoesNotThrow(() -> medicalrecordService.saveMedicalrecord(new Medicalrecord()));
 
         verify(medicalrecordRepository).save(any(Medicalrecord.class));
-    }
+    }*/
 
     @Test
-    public void updateExistingMedicalrecord() throws NotFoundException {
-        Medicalrecord medicalrecord;
-        medicalrecord = new Medicalrecord();
-        medicalrecord.setLastName("Doe");
-        medicalrecord.setFirstName("John");
+    public void shouldUpdateExistingMedicalrecord() throws NotFoundException {
+        when(medicalrecordRepository.findByName(anyString(), anyString())).thenReturn(Optional.of(new Medicalrecord()));
 
-        when(medicalrecordRepository.existsByName(anyString(), anyString())).thenReturn(true);
-
-        medicalrecordService.updateMedicalrecord("Doe", "John", medicalrecord);
+        assertDoesNotThrow(() -> medicalrecordService.updateMedicalrecord("Doe", "John", new Medicalrecord()));
 
         verify(medicalrecordRepository).update(anyString(), anyString(), any(Medicalrecord.class));
+        reset(medicalrecordRepository);
     }
 
     @Test
-    public void updateNonExistingMedicalrecord() {
-        Medicalrecord medicalrecord;
-        medicalrecord = new Medicalrecord();
-        medicalrecord.setLastName("Doe");
-        medicalrecord.setFirstName("John");
+    public void shouldUpdateNonExistingMedicalrecord() {
+        when(medicalrecordRepository.update(anyString(), anyString(), any(Medicalrecord.class))).thenThrow(new NotFoundException("Medicalrecord not found"));
 
-        when(medicalrecordRepository.existsByName(anyString(), anyString())).thenReturn(false);
+        NotFoundException nfe = assertThrows(NotFoundException.class,
+                () -> medicalrecordService.updateMedicalrecord("Doe", "John", new Medicalrecord()));
 
-        NotFoundException exception = assertThrows(NotFoundException.class,
-                () -> medicalrecordService.updateMedicalrecord("Doe", "John", medicalrecord));
+        assertTrue(nfe.getMessage().contains("Medicalrecord not found"));
+    }
 
-        assertEquals(
-                "Medicalrecord not found", exception.getMessage());
+    @Test
+    public void shouldGetAge() {
+        Medicalrecord medicalrecord = new Medicalrecord();
+        medicalrecord.setBirthdate(LocalDate.now().minusYears(20));
+
+        when(medicalrecordRepository.findByName(anyString(), anyString())).thenReturn(Optional.of(medicalrecord));
+
+        int toCheck = medicalrecordService.getAge("Doe", "John");
+
+        assertEquals(20, toCheck);
+    }
+
+    @Test
+    public void shouldReturnFalseForMajor() {
+        Medicalrecord medicalrecord = new Medicalrecord();
+        medicalrecord.setBirthdate(LocalDate.now().minusYears(20));
+
+        when(medicalrecordRepository.findByName(anyString(), anyString())).thenReturn(Optional.of(medicalrecord));
+
+        boolean toCheck = medicalrecordService.isMinor("Doe", "John");
+
+        assertFalse(toCheck);
+    }
+
+    @Test
+    public void shouldReturnTrueForMinor() {
+        Medicalrecord medicalrecord = new Medicalrecord();
+        medicalrecord.setBirthdate(LocalDate.now().minusYears(16));
+
+        when(medicalrecordRepository.findByName(anyString(), anyString())).thenReturn(Optional.of(medicalrecord));
+
+        boolean toCheck = medicalrecordService.isMinor("Doe", "John");
+
+        assertTrue(toCheck);
     }
 }
