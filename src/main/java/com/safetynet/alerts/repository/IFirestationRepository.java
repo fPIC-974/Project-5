@@ -1,7 +1,5 @@
 package com.safetynet.alerts.repository;
 
-import com.safetynet.alerts.exception.AlreadyExistsException;
-import com.safetynet.alerts.exception.NotFoundException;
 import com.safetynet.alerts.model.Firestation;
 
 import java.util.List;
@@ -16,13 +14,13 @@ public interface IFirestationRepository {
 
     Optional<Firestation> find(String address, int station);
 
-    boolean exists(String address, int station);
+//    boolean exists(String address, int station);
 
-    void delete(Firestation firestation) throws NotFoundException;
+    boolean delete(Firestation firestation);
 
-    void delete(String address, int station) throws NotFoundException;
+    void delete(String address, int station);
 
-    Firestation update(String address, int station, Firestation firestation) throws NotFoundException;
+    Firestation update(String address, int station, Firestation firestation);
 
-    Firestation save(Firestation firestation) throws AlreadyExistsException;
+    Firestation save(Firestation firestation);
 }
