@@ -1,14 +1,11 @@
 package com.safetynet.alerts.service;
 
-import com.safetynet.alerts.exception.AlreadyExistsException;
-import com.safetynet.alerts.exception.NotFoundException;
 import com.safetynet.alerts.model.Person;
 import com.safetynet.alerts.repository.IMedicalrecordRepository;
 import com.safetynet.alerts.repository.IPersonRepository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -25,12 +22,9 @@ public class PersonService implements IPersonService {
 
     private final IPersonRepository personRepository;
 
-    private final IMedicalrecordService medicalrecordService;
-
     @Autowired
-    public PersonService(IPersonRepository personRepository, @Lazy IMedicalrecordService medicalrecordService) {
+    public PersonService(IPersonRepository personRepository) {
         this.personRepository = personRepository;
-        this.medicalrecordService = medicalrecordService;
     }
 
     /**
@@ -39,6 +33,7 @@ public class PersonService implements IPersonService {
      */
     @Override
     public List<Person> getPersons() {
+        logger.debug("Method called : getPersons()");
         return (List<Person>) personRepository.findAll();
     }
 
@@ -50,6 +45,7 @@ public class PersonService implements IPersonService {
      */
     @Override
     public Person getPersonByName(String lastName, String firstName) {
+        logger.debug("Method called : getPersonByName(\"" + lastName + "\", \"" + firstName + "\")");
         return personRepository.findByName(lastName, firstName).orElse(null);
     }
 
@@ -60,6 +56,7 @@ public class PersonService implements IPersonService {
      */
     @Override
     public List<Person> getPersonsByCity(String city) {
+        logger.debug("Method called : getPersonsByCity(\"" + city + "\")");
         return getPersons().stream()
                 .filter(p -> p.getCity().equals(city))
                 .toList();
@@ -72,41 +69,11 @@ public class PersonService implements IPersonService {
      */
     @Override
     public List<Person> getPersonsByAddress(String address) {
+        logger.debug("Method called : getPersonsByAddress(\"" + address + "\")");
+
         return getPersons().stream()
                 .filter(person -> person.getAddress().equals(address))
                 .collect(Collectors.toList());
-    }
-
-    /**
-     * Returns whether a person matching parameters exists in repository
-     * @param lastName the lastname field to be matched
-     * @param firstName the firstname field to be matched
-     * @return true if the person is found, false otherwise
-     */
-    @Override
-    public boolean existsPersonByName(String lastName, String firstName) {
-        return personRepository.existsByName(lastName, firstName);
-    }
-
-    /**
-     * Deletes a person object matching both lastname and firstname fields
-     * @param lastName the value of the lastname field to be matched
-     * @param firstName the value of the firstname field to be matched
-     */
-    @Override
-    public void deletePersonByName(String lastName, String firstName) throws NotFoundException {
-        logger.debug("Method called : deletePersonByName(" + lastName + ", " + firstName + ")");
-        if (existsPersonByName(lastName, firstName)) {
-            personRepository.deleteByName(lastName, firstName);
-            if (medicalrecordService.existsMedicalrecord(lastName, firstName)) {
-                medicalrecordService.deleteMedicalrecordByName(lastName, firstName);
-            }
-        } else {
-            logger.error("Person not found : "
-                    + lastName + ":"
-                    + firstName);
-            throw new NotFoundException("Person not found");
-        }
     }
 
     /**
@@ -115,16 +82,10 @@ public class PersonService implements IPersonService {
      * @return the added person object, or null if already exists
      */
     @Override
-    public Person savePerson(Person person) throws AlreadyExistsException {
+    public Person savePerson(Person person) {
         logger.debug("Method called : savePerson(" + person + ")");
-        if (!existsPersonByName(person.getLastName(), person.getFirstName())) {
-            return personRepository.save(person);
-        } else {
-            logger.error("Person already exists : "
-                    + person.getLastName() + ":"
-                    + person.getFirstName());
-            throw new AlreadyExistsException("Person already exists");
-        }
+
+        return personRepository.save(person);
     }
 
     /**
@@ -136,15 +97,9 @@ public class PersonService implements IPersonService {
      * @return the updated person object, or null if no match
      */
     @Override
-    public Person updatePerson(String lastName, String firstName, Person person) throws NotFoundException {
-        logger.debug("Method called : updatePerson(" + lastName + ", " + firstName + ", " + person + ")");
-        if (existsPersonByName(lastName, firstName)) {
-            return personRepository.update(lastName, firstName, person);
-        } else {
-            logger.error("Person not found : "
-                    + lastName + ":"
-                    + firstName);
-            throw new NotFoundException("Person not found");
-        }
+    public Person updatePerson(String lastName, String firstName, Person person) {
+        logger.debug("Method called : updatePerson(\"" + lastName + "\", \"" + firstName + "\", " + person + ")");
+
+        return personRepository.update(lastName, firstName, person);
     }
 }

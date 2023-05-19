@@ -1,4 +1,4 @@
-package com.safetynet.alerts.repository;
+package com.safetynet.alerts.config;
 
 import org.springframework.boot.actuate.web.exchanges.InMemoryHttpExchangeRepository;
 import org.springframework.boot.context.properties.ConfigurationProperties;

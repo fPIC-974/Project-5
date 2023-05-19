@@ -77,4 +77,15 @@ public class Person {
                 ", email='" + email + '\'' +
                 '}';
     }
+
+    /*@Override
+    public boolean isNotValid() {
+        return getFirstName().isBlank() ||
+                getLastName().isBlank() ||
+                getAddress().isBlank() ||
+                getCity().isBlank() ||
+                getZip() < 0 ||
+                getPhone().isBlank() ||
+                getEmail().isBlank();
+    }*/
 }

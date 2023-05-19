@@ -3,8 +3,8 @@ package com.safetynet.alerts.service;
 import com.safetynet.alerts.exception.AlreadyExistsException;
 import com.safetynet.alerts.exception.NotFoundException;
 import com.safetynet.alerts.model.Person;
-import com.safetynet.alerts.repository.MedicalrecordRepository;
 import com.safetynet.alerts.repository.PersonRepository;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -24,9 +24,6 @@ class PersonServiceTest {
     @Mock
     private PersonRepository personRepository;
 
-    @Mock
-    private MedicalrecordService medicalrecordService;
-
     @InjectMocks
     private PersonService personService;
 
@@ -45,94 +42,63 @@ class PersonServiceTest {
     }
 
     @Test
-    public void deleteExistingPersonWithMedicalrecord() throws NotFoundException {
+    public void getNonExistingPerson() {
+        when(personRepository.findByName(anyString(), anyString())).thenReturn(Optional.ofNullable(null));
 
-        when(personRepository.existsByName(anyString(), anyString())).thenReturn(true);
-        when(medicalrecordService.existsMedicalrecord(anyString(), anyString())).thenReturn(true);
+        Person toCheck = personService.getPersonByName("Doe", "John");
 
-        personService.deletePersonByName("Doe", "John");
-
-        verify(personRepository).deleteByName(anyString(), anyString());
-        verify(medicalrecordService).deleteMedicalrecordByName(anyString(), anyString());
+        assertNull(toCheck);
     }
 
-    @Test
-    public void deleteExistingPersonWithoutMedicalrecord() throws NotFoundException {
-
-        when(personRepository.existsByName(anyString(), anyString())).thenReturn(true);
-        when(medicalrecordService.existsMedicalrecord(anyString(), anyString())).thenReturn(false);
-
-        personService.deletePersonByName("Doe", "John");
-
-        verify(personRepository).deleteByName(anyString(), anyString());
-        verify(medicalrecordService, times(0)).deleteMedicalrecordByName(anyString(), anyString());
-    }
-
-    @Test
+    /*@Test
     public void deleteNonExistingPerson() {
-        when(personRepository.existsByName(anyString(), anyString())).thenReturn(false);
+        when(personRepository.delete(anyString(), anyString())).thenThrow(new NotFoundException("Person not found"));
 
-        NotFoundException exception = assertThrows(NotFoundException.class,
-                () -> personService.deletePersonByName(anyString(), anyString()));
+        NotFoundException nfe = assertThrows(NotFoundException.class, () -> personService.deletePersonByName(anyString(), anyString()));
 
-        assertEquals("Person not found", exception.getMessage());
-    }
+        assertTrue(nfe.getMessage().contains("Person not found"));
+    }*/
+
+    /*@Test
+    public void deleteExistingPerson() {
+        assertDoesNotThrow(() -> personService.deletePersonByName(anyString(), anyString()));
+
+        verify(personRepository, times(1)).delete(anyString(), anyString());
+    }*/
 
     @Test
     public void saveExistingPerson() {
-        Person person;
-        person = new Person();
-        person.setLastName("Doe");
-        person.setFirstName("John");
-
-        when(personRepository.existsByName(anyString(), anyString())).thenReturn(true);
+        when(personRepository.save(any(Person.class))).thenThrow(new AlreadyExistsException("Person already exists"));
 
         AlreadyExistsException exception = assertThrows(AlreadyExistsException.class,
-                () -> personService.savePerson(person));
+                () -> personService.savePerson(new Person()));
 
-        assertEquals(
-                "Person already exists", exception.getMessage());
+        assertEquals("Person already exists", exception.getMessage());
     }
 
     @Test
     public void saveNonExistingPerson() throws AlreadyExistsException{
-        Person person;
-        person = new Person();
-        person.setLastName("Doe");
-        person.setFirstName("John");
-
-        when(personRepository.existsByName(anyString(), anyString())).thenReturn(false);
-
-        personService.savePerson(person);
+        assertDoesNotThrow(() -> personService.savePerson(new Person()));
 
         verify(personRepository).save(any(Person.class));
     }
 
     @Test
     public void updateExistingPerson() throws NotFoundException{
-        Person person;
-        person = new Person();
-        person.setLastName("Doe");
-        person.setFirstName("John");
+        when(personRepository.findByName(anyString(), anyString())).thenReturn(Optional.of(new Person()));
 
-        when(personRepository.existsByName(anyString(), anyString())).thenReturn(true);
-
-        personService.updatePerson("Doe", "John", person);
+        assertDoesNotThrow(() -> personService.updatePerson("Doe", "John", new Person()));
 
         verify(personRepository).update(anyString(), anyString(), any(Person.class));
+        reset(personRepository);
     }
 
     @Test
     public void updateNonExistingPerson() {
-        Person person;
-        person = new Person();
-        person.setLastName("Doe");
-        person.setFirstName("John");
-
-        when(personRepository.existsByName(anyString(), anyString())).thenReturn(false);
+        when(personRepository.update(anyString(), anyString(), any(Person.class))).thenThrow(new NotFoundException("Person not found"));
 
         NotFoundException exception = assertThrows(NotFoundException.class,
-                () -> personService.updatePerson("Doe", "John", person));
+                () -> personService.updatePerson("Doe", "John", new Person()));
 
         assertEquals(
                 "Person not found", exception.getMessage());

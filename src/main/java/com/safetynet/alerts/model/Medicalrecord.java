@@ -1,6 +1,7 @@
 package com.safetynet.alerts.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.safetynet.alerts.repository.IUsable;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -63,5 +64,14 @@ public class Medicalrecord {
                 ", allergies=" + allergies +
                 '}';
     }
+
+    /*@Override
+    public boolean isNotValid() {
+        //if (this == null) { return true; }
+
+        return getFirstName().isBlank() ||
+                getLastName().isBlank() ||
+                getBirthdate() == null;
+    }*/
 }
 

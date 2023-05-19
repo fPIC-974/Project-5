@@ -3,7 +3,9 @@ package com.safetynet.alerts.repository;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.safetynet.alerts.config.CustomProperties;
 import com.safetynet.alerts.exception.AlreadyExistsException;
+import com.safetynet.alerts.exception.InvalidObjectParameterException;
 import com.safetynet.alerts.exception.NotFoundException;
 import com.safetynet.alerts.model.Person;
 import org.apache.logging.log4j.LogManager;
@@ -20,7 +22,7 @@ import java.util.Optional;
  * Repository of persons
  */
 @Repository
-public class PersonRepository implements IPersonRepository {
+public class PersonRepository implements IPersonRepository, IUsable<Person> {
     private static final Logger logger = LogManager.getLogger(PersonRepository.class);
 
     private List<Person> personRepository;
@@ -33,6 +35,7 @@ public class PersonRepository implements IPersonRepository {
      */
     public PersonRepository(CustomProperties properties) {
         this.properties = properties;
+
         try {
             InputStream dataSource = new ClassPathResource(this.properties.getDataSource()).getInputStream();
 
@@ -55,6 +58,7 @@ public class PersonRepository implements IPersonRepository {
      */
     @Override
     public Iterable<Person> findAll() {
+        logger.debug("Method called : findAll()");
         return personRepository;
     }
 
@@ -66,20 +70,10 @@ public class PersonRepository implements IPersonRepository {
      */
     @Override
     public Optional<Person> findByName(String lastName, String firstName) {
+        logger.debug("Method called : findByName(\"" + lastName + "\", \"" + firstName + "\")");
         return this.personRepository.stream()
                 .filter(person -> person.getLastName().equals(lastName) && person.getFirstName().equals(firstName))
                 .findFirst();
-    }
-
-    /**
-     * Returns whether a person with both the given firstname and lastname exists
-     * @param lastName the value of the lastname field to be matched
-     * @param firstName the value of the firstname field to be matched
-     * @return true if the object is found, false otherwise
-     */
-    @Override
-    public boolean existsByName(String lastName, String firstName) {
-        return this.findByName(lastName, firstName).isPresent();
     }
 
     /**
@@ -87,15 +81,17 @@ public class PersonRepository implements IPersonRepository {
      * @param person the person object to be deleted
      */
     @Override
-    public void delete(Person person) throws NotFoundException {
+    public boolean delete(Person person) {
         logger.debug("Method called : delete(" + person + ")");
 
         if(!personRepository.remove(person)) {
-            logger.error("Not found : " + person);
+            logger.error("Person not found : " + person);
             throw new NotFoundException("Person not found");
         }
 
         logger.info("Deleted : " + person);
+
+        return true;
     }
 
     /**
@@ -105,19 +101,19 @@ public class PersonRepository implements IPersonRepository {
      * @param firstName the value of the firstname field to be matched
      */
     @Override
-    public void deleteByName(String lastName, String firstName) throws NotFoundException {
-        // TODO - Override delete(Person)
-        // TODO - Return bool
-        logger.debug("Method called : deleteByName("
-                + lastName + ", " + firstName + ")");
+    public boolean delete(String lastName, String firstName) {
+        logger.debug("Method called : deleteByName(\""
+                + lastName + "\", \"" + firstName + "\")");
 
-        if (existsByName(lastName, firstName)) {
-            delete(findByName(lastName, firstName).orElse(null));
-        } else {
+        Person foundPerson = findByName(lastName, firstName).orElse(null);
+
+        if (foundPerson == null) {
             logger.error("Person not found :" +
                     " { lastName: " + lastName + ", firstName: " + firstName + " }");
             throw new NotFoundException("Person not found");
         }
+
+        return delete(foundPerson);
     }
 
     /**
@@ -129,9 +125,14 @@ public class PersonRepository implements IPersonRepository {
      * @return the updated person object, or null if no match
      */
     @Override
-    public Person update(String lastName, String firstName, Person person) throws NotFoundException {
+    public Person update(String lastName, String firstName, Person person) {
         logger.debug("Method called : update("
                 + lastName + ", " + firstName + ", " + person + ")");
+
+        if (isNotValid(person)) {
+            logger.error("Invalid parameter : " + person);
+            throw new InvalidObjectParameterException("Invalid parameter");
+        }
 
         Person toUpdate = findByName(lastName, firstName).orElse(null);
 
@@ -159,16 +160,40 @@ public class PersonRepository implements IPersonRepository {
      * @return the added person object, or null if already exists
      */
     @Override
-    public Person save(Person person) throws AlreadyExistsException {
+    public Person save(Person person) {
         logger.debug("Method called : save(" + person + ")");
 
-        if (!existsByName(person.getLastName(), person.getFirstName())) {
-            personRepository.add(person);
-            logger.info("Added : " + person);
-            return person;
-        } else {
-            logger.error("Already exists : " + person);
+        if (isNotValid(person)) {
+            logger.error("Invalid parameter : " + person);
+            throw new InvalidObjectParameterException("Invalid parameter");
+        }
+
+        Optional<Person> existingPerson = findByName(person.getLastName(), person.getFirstName());
+
+        if (existingPerson.isPresent()) {
+            logger.error("Person already exists : " + existingPerson);
             throw new AlreadyExistsException("Person already exists");
         }
+
+        personRepository.add(person);
+        logger.info("Person added : " + person);
+        return person;
+    }
+
+    /**
+     * Check whether an object is valid
+     * Object is valid if main attributes are not blank (and implicitly not null)
+     * @param person the object to check
+     * @return true if valid, false otherwise
+     */
+    @Override
+    public boolean isNotValid(Person person) {
+        return person.getFirstName().isBlank() ||
+                person.getLastName().isBlank() ||
+                person.getAddress().isBlank() ||
+                person.getCity().isBlank() ||
+                person.getZip() < 0 ||
+                person.getPhone().isBlank() ||
+                person.getEmail().isBlank();
     }
 }

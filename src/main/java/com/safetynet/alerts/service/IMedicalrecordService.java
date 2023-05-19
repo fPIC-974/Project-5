@@ -1,7 +1,5 @@
 package com.safetynet.alerts.service;
 
-import com.safetynet.alerts.exception.AlreadyExistsException;
-import com.safetynet.alerts.exception.NotFoundException;
 import com.safetynet.alerts.model.Medicalrecord;
 
 import java.util.List;
@@ -11,13 +9,11 @@ public interface IMedicalrecordService {
 
     Medicalrecord getMedicalrecord(String lastName, String firstName);
 
-    boolean existsMedicalrecord(String lastName, String firstName);
+    void deleteMedicalrecordByName(String lastName, String firstName);
 
-    void deleteMedicalrecordByName(String lastName, String firstName) throws NotFoundException;
+    //Medicalrecord saveMedicalrecord(Medicalrecord medicalrecord);
 
-    Medicalrecord saveMedicalrecord(Medicalrecord medicalrecord) throws AlreadyExistsException, NotFoundException;
-
-    Medicalrecord updateMedicalrecord(String lastName, String firstName, Medicalrecord medicalrecord) throws NotFoundException;
+    Medicalrecord updateMedicalrecord(String lastName, String firstName, Medicalrecord medicalrecord);
 
     int getAge(String lastName, String firstName);
 
