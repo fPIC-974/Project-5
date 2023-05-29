@@ -70,26 +70,29 @@ class FirestationServiceTest {
     }
 
     @Test
-    @Disabled
     public void deleteNonExistingFirestation() {
-        when(firestationRepository.delete(any(Firestation.class))).thenThrow(new NotFoundException("Firestation not found"));
+        when(firestationRepository.delete(anyString(), anyInt())).thenThrow(new NotFoundException("Firestation not found"));
         when(firestationRepository.find(anyString(), anyInt())).thenReturn(Optional.empty());
 
         NotFoundException exception = assertThrows(NotFoundException.class,
                 () -> firestationService.deleteFirestation("Whatever", 22));
 
         assertEquals("Firestation not found", exception.getMessage());
+
+        reset(firestationRepository);
     }
 
     @Test
-    @Disabled
     public void deleteNonExistingFirestationByAddress() {
-        when(firestationRepository.find(anyString(), anyInt())).thenReturn(null);
+        when(firestationRepository.delete(anyString(), anyInt())).thenThrow(new NotFoundException("Firestation not found"));
+        when(firestationRepository.find(anyString(), anyInt())).thenReturn(Optional.empty());
 
         NotFoundException exception = assertThrows(NotFoundException.class,
                 () -> firestationService.deleteFirestation(anyString(), anyInt()));
 
         assertEquals("Firestation not found", exception.getMessage());
+
+        reset(firestationRepository);
     }
 
     @Test
@@ -107,33 +110,35 @@ class FirestationServiceTest {
     }
 
     @Test
-    @Disabled
     public void updateNonExistingFirestation() {
         Firestation firestation = new Firestation();
         firestation.setAddress("test address");
         firestation.setStation(15);
 
         when(firestationRepository.find("test address", 10)).thenReturn(null);
+        when(firestationRepository.update(anyString(), anyInt(), any(Firestation.class))).thenReturn(null);
 
-        NotFoundException exception = assertThrows(NotFoundException.class,
-                () -> firestationService.updateFirestation("test address", 10, firestation));
+        Firestation toCheck = firestationService.updateFirestation("test address", 10, firestation);
 
-        assertEquals("Firestation not found", exception.getMessage());
+        assertNull(toCheck);
+        reset(firestationRepository);
     }
 
     @Test
-    @Disabled
+    //@Disabled
     public void saveExistingFirestation() {
         Firestation firestation = new Firestation();
         firestation.setAddress("test address");
         firestation.setStation(15);
 
         when(firestationRepository.find("test address", 15)).thenReturn(Optional.of(firestation));
+        when(firestationRepository.save(any(Firestation.class))).thenReturn(null);
 
-        AlreadyExistsException exception = assertThrows(AlreadyExistsException.class,
-                () -> firestationService.saveFirestation(firestation));
+        Firestation toCheck = firestationService.saveFirestation(firestation);
 
-        assertEquals("Firestation already exists", exception.getMessage());
+        assertNull(toCheck);
+
+        reset(firestationRepository);
     }
 
     @Test

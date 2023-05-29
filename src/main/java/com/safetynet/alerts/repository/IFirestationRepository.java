@@ -18,7 +18,7 @@ public interface IFirestationRepository {
 
     boolean delete(Firestation firestation);
 
-    void delete(String address, int station);
+    boolean delete(String address, int station);
 
     Firestation update(String address, int station, Firestation firestation);
 
