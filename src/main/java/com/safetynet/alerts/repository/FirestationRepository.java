@@ -130,7 +130,7 @@ public class FirestationRepository implements IFirestationRepository, IUsable<Fi
      * @param station the value of the station field to be matched
      */
     @Override
-    public void delete(String address, int station) {
+    public boolean delete(String address, int station) {
         logger.debug("Method called : delete("
                 + address + ", " + station + ")");
 
@@ -143,6 +143,7 @@ public class FirestationRepository implements IFirestationRepository, IUsable<Fi
         }
 
         delete(firestation.get());
+        return true;
     }
 
     /**
